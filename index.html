@@ -141,20 +141,27 @@
       <p class="tip">미리보기 화면을 마우스나 손가락으로 직접 문질러도 서리가 닦여요. ‘입김 불기’를 누르면 닦인 부분 위로 다시 김이 차오릅니다.</p>
     </section>
 
-    <section class="section">
-      <div class="section-title"><strong>저장</strong><span class="mini">GIF · PHOTO</span></div>
-      <div class="seg two">
-        <input type="radio" name="gifSize" id="gif480" value="480" checked><label for="gif480">480 × 640</label>
-        <input type="radio" name="gifSize" id="gif720" value="720"><label for="gif720">720 × 960</label>
-      </div>
-      <div class="btns">
-        <button class="btn save" id="gifBtn">GIF로 저장하기</button>
-        <button class="btn ghost" id="pngBtn">PNG로 저장하기</button>
-        <button class="btn ghost" id="jpgBtn">JPG로 저장하기</button>
-      </div>
-      <p class="tip">사진은 브라우저 안에서만 처리되며 서버로 업로드되지 않아요.</p>
-    </section>
-  </aside>
+    
+<section class="section">
+  <div class="section-title">
+    <strong>저장</strong>
+    <span class="mini">GIF · PHOTO</span>
+  </div>
+
+  <div class="btns">
+    <button class="btn primary" id="gifBtn">
+      GIF로 저장하기
+    </button>
+    <button class="btn ghost" id="pngBtn">
+      PNG로 저장하기
+    </button>
+  </div>
+
+  <p class="tip">
+    사진은 브라우저 안에서만 처리되며 서버로 업로드되지 않아요.
+  </p>
+</section>
+
 
   <main class="stage-wrap">
     <div class="preview-shell">
@@ -189,7 +196,7 @@
 
   const els={
     photo:document.getElementById('photoInput'), frost:document.getElementById('frost'), blur:document.getElementById('blur'), wipe:document.getElementById('wipeSize'), duration:document.getElementById('duration'),
-    sound:document.getElementById('soundToggle'), sparkle:document.getElementById('sparkleToggle'), play:document.getElementById('playBtn'), breath:document.getElementById('breathBtn'), reset:document.getElementById('resetBtn'), clear:document.getElementById('clearBtn'), gif:document.getElementById('gifBtn'), png:document.getElementById('pngBtn'), jpg:document.getElementById('jpgBtn'), hint:document.getElementById('hint'), status:document.getElementById('status'), progress:document.getElementById('progress'), bar:document.getElementById('bar')
+    sound:document.getElementById('soundToggle'), sparkle:document.getElementById('sparkleToggle'), play:document.getElementById('playBtn'), breath:document.getElementById('breathBtn'), reset:document.getElementById('resetBtn'), clear:document.getElementById('clearBtn'), gif:document.getElementById('gifBtn'), png:document.getElementById('pngBtn'), hint:document.getElementById('hint'), status:document.getElementById('status'), progress:document.getElementById('progress'), bar:document.getElementById('bar')
   };
   let photo=null, drawing=false, lastPt=null, animId=0, breath=0, sparkT=0, currentAutoProgress=null;
   let audioCtx=null;
@@ -593,8 +600,8 @@
   els.duration.addEventListener('input',()=>document.getElementById('durationVal').textContent=(+els.duration.value/10).toFixed(1)+'s');
 
   function exportStill(type='image/png', quality=.92){
-  const outW=+document.querySelector('input[name="gifSize"]:checked').value;
-  const outH=Math.round(outW*4/3);
+    const outW=720;
+    const outH=960;
 
   // 프리뷰의 창문 프레임 바깥 여백 추가
   const padding=Math.round(outW*10/720);
@@ -656,8 +663,8 @@
     els.gif.disabled=true;els.progress.classList.add('show');els.status.textContent='GIF 엔진 불러오는 중…';els.bar.style.width='3%';
     try{
       const {GIFEncoder,quantize,applyPalette}=await import('https://cdn.jsdelivr.net/npm/gifenc@1.0.3/+esm');
-      const outW=+document.querySelector('input[name="gifSize"]:checked').value;
-const outH=Math.round(outW*4/3);
+      const outW=720;
+const outH=960;
 const padding=Math.round(outW*10/720);
 
 const scene=document.createElement('canvas');
@@ -695,8 +702,6 @@ let rgba=oc.getImageData(0,0,out.width,out.height).data;;let palette=quantize(rg
   }
   els.gif.onclick=exportGIF;
   els.png.onclick=()=>exportStill('image/png');
-  els.jpg.onclick=()=>exportStill('image/jpeg',.94);
-
   fitPhoto();buildFrost();requestAnimationFrame(loop);
 })();
 </script>
