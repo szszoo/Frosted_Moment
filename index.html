@@ -91,14 +91,31 @@
       <span class="credit">@hee_archive_</span>
     </div>
 
-    <section class="section">
-      <label class="upload" for="photoInput">
-        <input id="photoInput" type="file" accept="image/*" />
-        <span class="icon">🖼️</span>
-        <b>사진 불러오기</b>
-        <span>JPG · PNG · WEBP</span>
-      </label>
-    </section>
+<section class="section">
+  <label class="upload" for="photoInput">
+    <input id="photoInput" type="file" accept="image/*" />
+    <span class="icon">🖼️</span>
+    <b>사진 불러오기</b>
+    <span>JPG · PNG · WEBP</span>
+  </label>
+
+  <!-- 사진 배율 조절 -->
+  <div class="control" style="margin-top:16px">
+    <label for="photoScale">사진 배율</label>
+    <span class="value" id="photoScaleVal">100%</span>
+    <input id="photoScale" type="range" min="100" max="200" value="100" />
+  </div>
+
+  <!-- 사진 위치 조정 -->
+  <button class="btn ghost" id="photoMoveBtn" type="button" style="width:100%">
+    ✥ 사진 위치 조정하기
+  </button>
+
+  <p class="tip">
+    위치 조정 버튼을 켜고 미리보기에서 드래그하면 사진을 이동할 수 있어요.
+  </p>
+</section>
+
 
     <section class="section">
       <div class="section-title"><strong>유리 느낌</strong><span class="mini">Frost</span></div>
@@ -156,6 +173,7 @@
       PNG로 저장하기
     </button>
   </div>
+  </aside>
 
   <p class="tip">
     사진은 브라우저 안에서만 처리되며 서버로 업로드되지 않아요.
@@ -195,10 +213,21 @@
   const tctx=trail.getContext('2d');
 
   const els={
-    photo:document.getElementById('photoInput'), frost:document.getElementById('frost'), blur:document.getElementById('blur'), wipe:document.getElementById('wipeSize'), duration:document.getElementById('duration'),
+        photo:document.getElementById('photoInput'),
+    photoScale:document.getElementById('photoScale'),
+    photoScaleVal:document.getElementById('photoScaleVal'),
+    photoMove:document.getElementById('photoMoveBtn'),
+    frost:document.getElementById('frost'), blur:document.getElementById('blur'), wipe:document.getElementById('wipeSize'), duration:document.getElementById('duration'),
     sound:document.getElementById('soundToggle'), sparkle:document.getElementById('sparkleToggle'), play:document.getElementById('playBtn'), breath:document.getElementById('breathBtn'), reset:document.getElementById('resetBtn'), clear:document.getElementById('clearBtn'), gif:document.getElementById('gifBtn'), png:document.getElementById('pngBtn'), hint:document.getElementById('hint'), status:document.getElementById('status'), progress:document.getElementById('progress'), bar:document.getElementById('bar')
   };
-  let photo=null, drawing=false, lastPt=null, animId=0, breath=0, sparkT=0, currentAutoProgress=null;
+    let photo=null, drawing=false, lastPt=null, animId=0, breath=0, sparkT=0, currentAutoProgress=null;
+
+  // 사진 확대 및 위치 조절
+  let photoZoom=1;
+  let photoOffsetX=0;
+  let photoOffsetY=0;
+  let movingPhoto=false;
+  let photoDragging=false;
   let audioCtx=null;
   const frostGlints=Array.from({length:30},(_,i)=>({x:(i*173.37)%W,y:(i*91.71)%H,r:5+(i%4)*1.8,ph:i*.83})).map((g,i)=>{
     const side=i%4;
@@ -227,11 +256,28 @@
     for(let i=0;i<10;i++){let x=(i*91+35)%W; pctx.beginPath();pctx.moveTo(x,H);pctx.lineTo(x+35,530-(i%3)*45);pctx.lineTo(x+78,H);pctx.fill()}
   }
 
-  function fitPhoto(){
+    function fitPhoto(){
     pctx.clearRect(0,0,W,H);
-    if(!photo){drawPlaceholder();return}
-    const s=Math.max(W/photo.width,H/photo.height), dw=photo.width*s, dh=photo.height*s;
-    pctx.drawImage(photo,(W-dw)/2,(H-dh)/2,dw,dh);
+
+    if(!photo){
+      drawPlaceholder();
+      return;
+    }
+
+    // 기본적으로 화면을 꽉 채우는 크기 계산
+    const baseScale=Math.max(W/photo.width,H/photo.height);
+
+    // 사용자가 선택한 배율 적용
+    const s=baseScale*photoZoom;
+
+    const dw=photo.width*s;
+    const dh=photo.height*s;
+
+    // 중앙을 기준으로 확대하고 드래그한 위치만큼 이동
+    const x=(W-dw)/2+photoOffsetX;
+    const y=(H-dh)/2+photoOffsetY;
+
+    pctx.drawImage(photo,x,y,dw,dh);
   }
 
   function snowflake(c,x,y,r,a){
@@ -566,9 +612,76 @@
   }
 
   function canvasPos(e){const r=canvas.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}}
-  canvas.addEventListener('pointerdown',e=>{drawing=true;canvas.setPointerCapture(e.pointerId);lastPt=canvasPos(e);solidStamp(mctx,lastPt.x,lastPt.y,+els.wipe.value,1);if(currentWipeMode()==='cloth') addClothTrail(lastPt,lastPt,+els.wipe.value);pushFlash(lastPt.x,lastPt.y,14,1);playWipeSound(.24);els.hint.classList.add('hide')});
-  canvas.addEventListener('pointermove',e=>{if(!drawing)return;const p=canvasPos(e);wipeLine(lastPt,p);if(currentWipeMode()==='cloth') addClothTrail(lastPt,p,+els.wipe.value);if(Math.random()>.45) pushFlash(p.x,p.y,12,.8);lastPt=p});
-  canvas.addEventListener('pointerup',()=>{drawing=false;lastPt=null});canvas.addEventListener('pointercancel',()=>{drawing=false;lastPt=null});
+    // 미리보기 드래그 기능
+  canvas.addEventListener('pointerdown',e=>{
+    drawing=true;
+    canvas.setPointerCapture(e.pointerId);
+
+    lastPt=canvasPos(e);
+
+    // 사진 위치 조정 모드
+    if(movingPhoto && photo){
+      photoDragging=true;
+      canvas.style.cursor='grabbing';
+      return;
+    }
+
+    // 기존 서리 닦기 기능
+    photoDragging=false;
+
+    solidStamp(mctx,lastPt.x,lastPt.y,+els.wipe.value,1);
+
+    if(currentWipeMode()==='cloth'){
+      addClothTrail(lastPt,lastPt,+els.wipe.value);
+    }
+
+    pushFlash(lastPt.x,lastPt.y,14,1);
+    playWipeSound(.24);
+    els.hint.classList.add('hide');
+  });
+
+  canvas.addEventListener('pointermove',e=>{
+    if(!drawing)return;
+
+    const p=canvasPos(e);
+
+    // 사진 이동
+    if(photoDragging){
+      photoOffsetX+=p.x-lastPt.x;
+      photoOffsetY+=p.y-lastPt.y;
+
+      lastPt=p;
+      fitPhoto();
+      return;
+    }
+
+    // 기존 서리 닦기
+    wipeLine(lastPt,p);
+
+    if(currentWipeMode()==='cloth'){
+      addClothTrail(lastPt,p,+els.wipe.value);
+    }
+
+    if(Math.random()>.45){
+      pushFlash(p.x,p.y,12,.8);
+    }
+
+    lastPt=p;
+  });
+
+  canvas.addEventListener('pointerup',()=>{
+    drawing=false;
+    lastPt=null;
+    photoDragging=false;
+    canvas.style.cursor=movingPhoto?'grab':'crosshair';
+  });
+
+  canvas.addEventListener('pointercancel',()=>{
+    drawing=false;
+    lastPt=null;
+    photoDragging=false;
+    canvas.style.cursor=movingPhoto?'grab':'crosshair';
+  });
 
   function ensureAudio(){if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx}
   function noiseSound(duration=.65,kind='wipe'){
@@ -593,11 +706,49 @@
   els.play.onclick=animateWipe;els.breath.onclick=breathAgain;els.reset.onclick=()=>{cancelAnimationFrame(animId);mctx.clearRect(0,0,W,H);clearTrails();breath=0;flashGlints=[];els.hint.classList.remove('hide')};
   els.clear.onclick=()=>{mctx.fillStyle='#fff';mctx.fillRect(0,0,W,H);clearTrails();flashGlints=[];els.hint.classList.add('hide')};
 
-  els.photo.addEventListener('change',e=>{const file=e.target.files?.[0];if(!file)return;const img=new Image();img.onload=()=>{photo=img;fitPhoto();mctx.clearRect(0,0,W,H);clearTrails();URL.revokeObjectURL(img.src);els.hint.classList.remove('hide')};img.src=URL.createObjectURL(file)});
+  els.photo.addEventListener('change',e=>{const file=e.target.files?.[0];if(!file)return;const img=new Image();img.onload=()=>{
+  photo=img;
+
+  // 새 사진은 기본 배율과 중앙 위치로 시작
+  photoZoom=1;
+  photoOffsetX=0;
+  photoOffsetY=0;
+
+  els.photoScale.value=100;
+  els.photoScaleVal.textContent='100%';
+
+  fitPhoto();
+
+  mctx.clearRect(0,0,W,H);
+  clearTrails();
+
+  URL.revokeObjectURL(img.src);
+  els.hint.classList.remove('hide');
+};img.src=URL.createObjectURL(file)});
   els.frost.addEventListener('input',()=>{document.getElementById('frostVal').textContent=els.frost.value+'%';buildFrost()});
   els.blur.addEventListener('input',()=>document.getElementById('blurVal').textContent=els.blur.value+'px');
   els.wipe.addEventListener('input',()=>document.getElementById('wipeVal').textContent=els.wipe.value);
   els.duration.addEventListener('input',()=>document.getElementById('durationVal').textContent=(+els.duration.value/10).toFixed(1)+'s');
+    // 사진 배율 조절
+  els.photoScale.addEventListener('input',()=>{
+    photoZoom=Number(els.photoScale.value)/100;
+    els.photoScaleVal.textContent=els.photoScale.value+'%';
+    fitPhoto();
+  });
+
+  // 사진 위치 조정 모드 켜기 / 끄기
+  els.photoMove.onclick=()=>{
+    movingPhoto=!movingPhoto;
+
+    els.photoMove.textContent=movingPhoto
+      ? '✓ 사진 위치 조정 중'
+      : '✥ 사진 위치 조정하기';
+
+    els.photoMove.classList.toggle('primary',movingPhoto);
+    els.photoMove.classList.toggle('ghost',!movingPhoto);
+
+    canvas.style.cursor=movingPhoto?'grab':'crosshair';
+  };
 
   function exportStill(type='image/png', quality=.92){
     const outW=720;
