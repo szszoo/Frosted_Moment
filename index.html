@@ -59,7 +59,7 @@
   .preview-shell{width:min(100%,760px);display:flex;flex-direction:column;align-items:center;gap:14px}
   .preview-top{width:100%;display:flex;align-items:center;justify-content:space-between;color:#84929c;font-size:11px;padding:0 6px}
   .live-dot{display:inline-flex;align-items:center;gap:6px}.live-dot:before{content:"";width:6px;height:6px;border-radius:50%;background:#89a7b8;box-shadow:0 0 0 4px rgba(137,167,184,.13)}
-  .canvas-frame{position:relative;width:min(100%,560px);aspect-ratio:3/4;border-radius:14px;padding:10px;background:linear-gradient(145deg,#2f211d,#4f382f 38%,#2a1d19 68%,#1f1512);box-shadow:0 24px 60px rgba(36,47,54,.24),inset 0 0 0 1px rgba(255,255,255,.08);touch-action:none;user-select:none;-webkit-user-select:none}
+  .canvas-frame{position:relative;width:min(100%,560px);aspect-ratio:3/4;border-radius:14px;padding:10px;background:linear-gradient(145deg,#382720,#604536 38%,#50382d 68%,#382720);box-shadow:0 24px 60px rgba(36,47,54,.24),inset 0 0 0 1px rgba(255,255,255,.08);touch-action:none;user-select:none;-webkit-user-select:none}
   .canvas-frame:before{content:"";position:absolute;inset:4px;border-radius:11px;border:1px solid rgba(255,255,255,.08);pointer-events:none}
   canvas{display:block;width:100%;height:100%;border-radius:7px;background:#cbd7df;touch-action:none}
   .hint{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);padding:8px 12px;border-radius:999px;background:rgba(25,33,39,.52);backdrop-filter:blur(8px);color:#fff;font-size:10px;letter-spacing:-.01em;pointer-events:none;transition:.35s;white-space:nowrap}
@@ -127,8 +127,8 @@
       <div class="control"><label for="duration">닦기 속도</label><span class="value" id="durationVal">2.8s</span><input id="duration" type="range" min="16" max="48" value="28" /></div>
       <div class="section-title" style="margin-top:12px"><strong>자동 닦기 모양</strong></div>
       <div class="seg two">
-        <input type="radio" name="wipeMode" id="wipeCloth" value="cloth" checked><label for="wipeCloth">천으로 닦기</label>
-        <input type="radio" name="wipeMode" id="wipeDiagonal" value="diagonal"><label for="wipeDiagonal">대각선으로 닦기</label>
+        <input type="radio" name="wipeMode" id="wipeCloth" value="cloth"><label for="wipeCloth">천으로 닦기</label>
+        <input type="radio" name="wipeMode" id="wipeDiagonal" value="diagonal" checked><label for="wipeDiagonal">대각선으로 닦기</label>
       </div>
       <div class="switch-row"><span>사각거리는 유리 소리</span><label class="switch"><input id="soundToggle" type="checkbox" checked><span class="slider"></span></label></div>
       <div class="switch-row"><span>겨울빛 반짝임</span><label class="switch"><input id="sparkleToggle" type="checkbox" checked><span class="slider"></span></label></div>
@@ -151,6 +151,7 @@
         <button class="btn save" id="gifBtn">GIF로 저장하기</button>
         <button class="btn ghost" id="pngBtn">PNG로 저장하기</button>
         <button class="btn ghost" id="jpgBtn">JPG로 저장하기</button>
+        <button class="btn save" id="manualSaveBtn">현재 닦인 모습 사진으로 저장</button>
       </div>
       <p class="tip">사진은 브라우저 안에서만 처리되며 서버로 업로드되지 않아요.</p>
     </section>
@@ -158,7 +159,7 @@
 
   <main class="stage-wrap">
     <div class="preview-shell">
-      <div class="preview-top"><span class="live-dot">LIVE PREVIEW</span><span>drag to wipe the frost</span></div>
+      <div class="preview-top"><span class="live-dot">LIVE PREVIEW</span></div>
       <div class="canvas-frame" id="canvasFrame">
         <canvas id="canvas" width="720" height="960" aria-label="서리 낀 창문 미리보기"></canvas>
         <div class="hint" id="hint">사진 위를 직접 스윽 문질러보세요</div>
@@ -189,7 +190,7 @@
 
   const els={
     photo:document.getElementById('photoInput'), frost:document.getElementById('frost'), blur:document.getElementById('blur'), wipe:document.getElementById('wipeSize'), duration:document.getElementById('duration'),
-    sound:document.getElementById('soundToggle'), sparkle:document.getElementById('sparkleToggle'), play:document.getElementById('playBtn'), breath:document.getElementById('breathBtn'), reset:document.getElementById('resetBtn'), clear:document.getElementById('clearBtn'), gif:document.getElementById('gifBtn'), png:document.getElementById('pngBtn'), jpg:document.getElementById('jpgBtn'), hint:document.getElementById('hint'), status:document.getElementById('status'), progress:document.getElementById('progress'), bar:document.getElementById('bar')
+    sound:document.getElementById('soundToggle'), sparkle:document.getElementById('sparkleToggle'), play:document.getElementById('playBtn'), breath:document.getElementById('breathBtn'), reset:document.getElementById('resetBtn'), clear:document.getElementById('clearBtn'), gif:document.getElementById('gifBtn'), png:document.getElementById('pngBtn'), jpg:document.getElementById('jpgBtn'), manualSave:document.getElementById('manualSaveBtn'), hint:document.getElementById('hint'), status:document.getElementById('status'), progress:document.getElementById('progress'), bar:document.getElementById('bar')
   };
   let photo=null, drawing=false, lastPt=null, animId=0, breath=0, sparkT=0, currentAutoProgress=null;
   let audioCtx=null;
@@ -301,66 +302,55 @@
 
   function clearTrails(){ tctx.clearRect(0,0,W,H); }
 
-  // Each cloth pass clears a filled fan-shaped area, rather than a thick line.
-  // The two gently overlapping arcs mimic a broad windscreen-wiper sweep.
+  // 한 번의 넓은 와이퍼 아크로 유리 중앙을 가로질러 닦아냅니다.
   function clothSweepGeometry(w,h){
-    return [
-      {x:w*.19,y:h*.81,r:w*.84,delay:0,span:.88},
-      {x:w*.57,y:h*.83,r:w*.84,delay:.12,span:.88}
-    ];
+    return {x:w*.5,y:h*.96,r:w*1.02,from:-Math.PI*.86,to:-Math.PI*.14};
   }
 
   function drawClothFan(c,w,h,progress,drawMoisture=false){
-    const from=-Math.PI*.91, to=-Math.PI*.075;
     if(progress<=0) return;
-    clothSweepGeometry(w,h).forEach((s,index)=>{
-      const part=Math.max(0,Math.min(1,(progress-s.delay)/s.span));
-      if(part<=0) return;
-      const ease=1-Math.pow(1-part,1.55);
-      const end=from+(to-from)*ease;
-      const inner=s.r*.15;
-      c.save();
-      c.beginPath();
-      c.arc(s.x,s.y,s.r,from,end,false);
-      c.arc(s.x,s.y,inner,end,from,true);
-      c.closePath();
-      c.fillStyle='#fff';
-      c.fill();
-      c.restore();
-      if(drawMoisture){
-        // Very subtle residual wet curves near the cloth's outer edge.
-        tctx.save();
-        tctx.lineCap='round';
-        for(let k=0;k<3;k++){
-          tctx.beginPath();
-          tctx.arc(s.x,s.y,s.r*(.88-k*.065),from+.15,end-.055,false);
-          tctx.lineWidth=1.8+k*1.2;
-          tctx.strokeStyle=`rgba(238,250,255,${.14-k*.025})`;
-          if(end-from>.25) tctx.stroke();
-        }
-        tctx.restore();
+    const s=clothSweepGeometry(w,h);
+    const ease=1-Math.pow(1-Math.min(1,progress),1.45);
+    const end=s.from+(s.to-s.from)*ease;
+    const inner=s.r*.16;
+
+    c.save();
+    c.beginPath();
+    c.arc(s.x,s.y,s.r,s.from,end,false);
+    c.arc(s.x,s.y,inner,end,s.from,true);
+    c.closePath();
+    c.fillStyle='#fff';
+    c.fill();
+    c.restore();
+
+    if(drawMoisture && end-s.from>.12){
+      tctx.save();
+      tctx.lineCap='round';
+      for(let k=0;k<3;k++){
+        tctx.beginPath();
+        tctx.arc(s.x,s.y,s.r*(.91-k*.055),s.from+.08,end-.035,false);
+        tctx.lineWidth=2+k*1.2;
+        tctx.strokeStyle=`rgba(238,250,255,${.15-k*.025})`;
+        tctx.stroke();
       }
-    });
+      tctx.restore();
+    }
   }
 
   function clothFrontPoint(progress,w=W,h=H){
-    const sweep=clothSweepGeometry(w,h)[progress<.18?0:1];
-    const part=Math.max(0,Math.min(1,(progress-sweep.delay)/sweep.span));
-    const a=-Math.PI*.91+Math.PI*.835*(1-Math.pow(1-part,1.55));
-    return {x:sweep.x+sweep.r*.77*Math.cos(a),y:sweep.y+sweep.r*.77*Math.sin(a)};
+    const s=clothSweepGeometry(w,h);
+    const ease=1-Math.pow(1-Math.max(0,Math.min(1,progress)),1.45);
+    const a=s.from+(s.to-s.from)*ease;
+    return {x:s.x+s.r*.78*Math.cos(a),y:s.y+s.r*.78*Math.sin(a)};
   }
 
   function buildDiagonalPath(targetW,targetH,r){
-    // Diagonal strokes still travel top to bottom.
-    const left=Math.max(r*.92,targetW*.09);
-    const right=Math.min(targetW-r*.92,targetW*.91);
-    const top=Math.max(r*.92,targetH*.08);
-    const bottom=Math.min(targetH-r*.65,targetH*.93);
-    const levels=[0,.18,.235,.40,.455,.63,.685,.84,1];
-    return levels.map((t,i)=>({
-      x:i%2===0?right-(i%4===2?targetW*.07:0):left+((i%4===3)?targetW*.055:targetW*.1),
-      y:top+(bottom-top)*t
-    }));
+    // 한 번의 큰 흐름이 좌측 상단에서 우측 하단으로 이어지도록 구성
+    const inset=Math.max(r*.58, targetW*.055);
+    return [
+      {x:inset,y:inset},
+      {x:targetW-inset,y:targetH-inset}
+    ];
   }
 
   function buildAutoPath(targetW=W,targetH=H){
@@ -480,31 +470,39 @@
   }
 
   function woodBar(c,x,y,wid,hei,vertical=true){
+    // 프레임과 격자에 같은 월넛 우드 팔레트를 적용해 톤을 통일
     const grad=vertical ? c.createLinearGradient(x,0,x+wid,0) : c.createLinearGradient(0,y,0,y+hei);
-    grad.addColorStop(0,'#2f211d');
-    grad.addColorStop(.24,'#493229');
-    grad.addColorStop(.5,'#5a4034');
-    grad.addColorStop(.76,'#3a2822');
-    grad.addColorStop(1,'#211613');
+    grad.addColorStop(0,'#382720');
+    grad.addColorStop(.16,'#50382d');
+    grad.addColorStop(.5,'#604536');
+    grad.addColorStop(.84,'#50382d');
+    grad.addColorStop(1,'#382720');
     c.fillStyle=grad;
     c.fillRect(x,y,wid,hei);
 
+    // 결은 바의 길이 방향으로 은은하게 표현
     c.save();
-    c.globalAlpha=.18;
-    for(let i=0;i<10;i++){
-      c.fillStyle=i%2===0?'rgba(255,255,255,.16)':'rgba(32,18,13,.28)';
+    c.beginPath();
+    c.rect(x,y,wid,hei);
+    c.clip();
+    c.globalAlpha=.16;
+    for(let i=0;i<9;i++){
+      c.strokeStyle=i%2===0?'rgba(232,197,160,.38)':'rgba(25,14,10,.32)';
+      c.lineWidth=Math.max(1,Math.min(wid,hei)*.025);
+      c.beginPath();
       if(vertical){
-        const gx=x+(i/10)*wid;
-        c.fillRect(gx,y,Math.max(1,wid*.06),hei);
+        const gx=x+wid*(.12+i*.095);
+        c.moveTo(gx,y); c.lineTo(gx+Math.sin(i*1.7)*wid*.025,y+hei);
       }else{
-        const gy=y+(i/10)*hei;
-        c.fillRect(x,gy,wid,Math.max(1,hei*.08));
+        const gy=y+hei*(.12+i*.095);
+        c.moveTo(x,gy); c.lineTo(x+wid,gy+Math.sin(i*1.7)*hei*.025);
       }
+      c.stroke();
     }
     c.restore();
 
-    c.strokeStyle='rgba(255,255,255,.14)';
-    c.lineWidth=Math.max(1,Math.min(wid,hei)*.08);
+    c.strokeStyle='rgba(225,192,158,.2)';
+    c.lineWidth=Math.max(1,Math.min(wid,hei)*.055);
     c.strokeRect(x+.5,y+.5,wid-1,hei-1);
   }
 
@@ -573,7 +571,7 @@
   function animateWipe(){
     cancelAnimationFrame(animId);els.hint.classList.add('hide');
     const mode=currentWipeMode();
-    const dur=Math.round(durationMs()*(mode==='diagonal'?1.12:.85));
+    const dur=Math.round(durationMs()*(mode==='diagonal'?1.12:1.0));
     playWipeSound(Math.min(1.55,dur/1000));
     const start=performance.now();
     function tick(now){const p=Math.min(1,(now-start)/dur);currentAutoProgress=p;buildAutoMask(p);if(Math.random()>.58){let pos;if(mode==='cloth'){pos=clothFrontPoint(p);}else{const {points}=buildAutoPath(W,H);const idx=Math.min(points.length-1,Math.floor((points.length-1)*p));pos=points[idx]||points[0];}if(pos) pushFlash(pos.x,pos.y,14,.95);} if(p<1)animId=requestAnimationFrame(tick);else currentAutoProgress=null}animId=requestAnimationFrame(tick)
@@ -618,7 +616,7 @@
       const {GIFEncoder,quantize,applyPalette}=await import('https://cdn.jsdelivr.net/npm/gifenc@1.0.3/+esm');
       const outW=+document.querySelector('input[name="gifSize"]:checked').value,outH=Math.round(outW*4/3);const out=document.createElement('canvas');out.width=outW;out.height=outH;const oc=out.getContext('2d',{willReadFrequently:true});
       const localMask=document.createElement('canvas');localMask.width=W;localMask.height=H;const lmc=localMask.getContext('2d');
-      const gif=GIFEncoder();const frames=24;const actualDuration=Math.round(durationMs()*(currentWipeMode()==='diagonal'?1.12:.85));const delay=Math.max(35,Math.round(actualDuration/frames));
+      const gif=GIFEncoder();const frames=24;const actualDuration=Math.round(durationMs()*(currentWipeMode()==='diagonal'?1.12:1.0));const delay=Math.max(35,Math.round(actualDuration/frames));
       for(let i=0;i<frames;i++){
         const p=i/(frames-1);buildAutoMask(p,lmc,localMask);render(oc,outW,outH,localMask,i*delay,0);const rgba=oc.getImageData(0,0,outW,outH).data;const palette=quantize(rgba,256,{format:'rgba4444'});const index=applyPalette(rgba,palette,'rgba4444');gif.writeFrame(index,outW,outH,{palette,delay,repeat:0});
         els.bar.style.width=`${Math.round((i+1)/frames*94)}%`;els.status.textContent=`GIF 만드는 중… ${i+1} / ${frames}`;await new Promise(r=>setTimeout(r,0));
@@ -631,6 +629,7 @@
   els.gif.onclick=exportGIF;
   els.png.onclick=()=>exportStill('image/png');
   els.jpg.onclick=()=>exportStill('image/jpeg',.94);
+  els.manualSave.onclick=()=>exportStill('image/png');
 
   fitPhoto();buildFrost();requestAnimationFrame(loop);
 })();
