@@ -529,25 +529,90 @@
       f.life*=0.84;
     });
 
-    if(currentAutoProgress!==null && currentWipeMode()==='cloth'){
-      const pos=clothFrontPoint(currentAutoProgress);
-      drawStarGlint(c,pos.x*sx,pos.y*sy,12*Math.min(sx,sy),.62);
+    // 기본 닦기와 천으로 닦기 모두 동일한 반짝이는 포인터 적용
+if(currentAutoProgress!==null){
+  let pos;
+
+  if(currentWipeMode()==='cloth'){
+    // 천으로 닦기: 기존 부채꼴 경로 유지
+    pos=clothFrontPoint(currentAutoProgress);
+  }else{
+    // 기본 닦기: 실제 닦이는 경로를 따라 부드럽게 이동
+    const {points}=buildAutoPath(W,H);
+
+    let total=0;
+    const lens=[];
+
+    for(let i=1;i<points.length;i++){
+      const len=Math.hypot(
+        points[i].x-points[i-1].x,
+        points[i].y-points[i-1].y
+      );
+      lens.push(len);
+      total+=len;
     }
-    if(currentAutoProgress!==null && currentWipeMode()==='diagonal'){
-      const {points,r}=buildAutoPath(W,H);
-      if(points.length>1){
-        let total=0; const lens=[];
-        for(let i=1;i<points.length;i++){ const len=Math.hypot(points[i].x-points[i-1].x,points[i].y-points[i-1].y); lens.push(len); total+=len; }
-        let remain=total*currentAutoProgress;
-        let pos=points[0];
-        for(let i=1;i<points.length;i++){
-          const a=points[i-1],b=points[i],len=lens[i-1];
-          if(remain>len){ remain-=len; pos=b; }
-          else { const t=len?remain/len:0; pos={x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t}; break; }
-        }
-        drawStarGlint(c,pos.x*sx,pos.y*sy,r*.38*Math.min(sx,sy),.62);
+
+    let remain=total*currentAutoProgress;
+    pos=points[0];
+
+    for(let i=1;i<points.length;i++){
+      const a=points[i-1];
+      const b=points[i];
+      const len=lens[i-1];
+
+      if(remain>len){
+        remain-=len;
+        pos=b;
+      }else{
+        const t=len?remain/len:0;
+
+        pos={
+          x:a.x+(b.x-a.x)*t,
+          y:a.y+(b.y-a.y)*t
+        };
+
+        break;
       }
     }
+  }
+
+  if(pos){
+    const size=12*Math.min(sx,sy);
+
+    // 반짝이는 별
+    drawStarGlint(
+      c,
+      pos.x*sx,
+      pos.y*sy,
+      size,
+      .62
+    );
+
+    // 별 주변의 은은한 빛
+    const glow=c.createRadialGradient(
+      pos.x*sx,
+      pos.y*sy,
+      0,
+      pos.x*sx,
+      pos.y*sy,
+      size*2.2
+    );
+
+    glow.addColorStop(0,'rgba(255,255,255,.32)');
+    glow.addColorStop(1,'rgba(255,255,255,0)');
+
+    c.fillStyle=glow;
+    c.beginPath();
+    c.arc(
+      pos.x*sx,
+      pos.y*sy,
+      size*2.2,
+      0,
+      Math.PI*2
+    );
+    c.fill();
+  }
+}
 
     c.restore();
   }
