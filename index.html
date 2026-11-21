@@ -144,8 +144,11 @@
       <div class="control"><label for="duration">닦기 속도</label><span class="value" id="durationVal">2.8s</span><input id="duration" type="range" min="16" max="48" value="28" /></div>
       <div class="section-title" style="margin-top:12px"><strong>닦기 모양</strong></div>
       <div class="seg two">
-        <input type="radio" name="wipeMode" id="wipeCloth" value="cloth" checked><label for="wipeCloth">천으로 닦기</label>
-        <input type="radio" name="wipeMode" id="wipeDiagonal" value="diagonal"><label for="wipeDiagonal">닦아내기</label>
+        <input type="radio" name="wipeMode" id="wipeDiagonal" value="diagonal" checked>
+        <label for="wipeDiagonal">기본 닦기</label>
+
+        <input type="radio" name="wipeMode" id="wipeCloth" value="cloth">
+        <label for="wipeCloth">천으로 닦기</label>
       </div>
       <div class="switch-row"><span>사각거리는 유리 소리</span><label class="switch"><input id="soundToggle" type="checkbox" checked><span class="slider"></span></label></div>
       <div class="switch-row"><span>겨울빛 반짝임</span><label class="switch"><input id="sparkleToggle" type="checkbox" checked><span class="slider"></span></label></div>
