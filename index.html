@@ -765,11 +765,9 @@
   const oc=out.getContext('2d',{willReadFrequently:true});
 
   // 프리뷰와 같은 나무색 프레임 배경
-  const bg=oc.createLinearGradient(0,0,out.width,out.height);
-  bg.addColorStop(0,'#2f211d');
-  bg.addColorStop(.38,'#4f382f');
-  bg.addColorStop(.68,'#2a1d19');
-  bg.addColorStop(1,'#1f1512');
+  const bg=oc.createLinearGradient(0,0,1,1);
+  bg.addColorStop(0,'#3a2822');
+  bg.addColorStop(1,'#3a2822');
 
   oc.fillStyle=bg;
   oc.fillRect(0,0,out.width,out.height);
@@ -834,7 +832,7 @@ const oc=out.getContext('2d',{willReadFrequently:true});
       for(let i=0;i<frames;i++){
         const p=i/(frames-1);buildAutoMask(p,lmc,localMask);render(sc,outW,outH,localMask,i*delay,0);
 
-oc.fillStyle='#382820';
+oc.fillStyle='#3a2822';
 oc.fillRect(0,0,out.width,out.height);
 oc.drawImage(scene,padding,padding,outW,outH);
 
@@ -845,11 +843,15 @@ const rgba=oc.getImageData(0,0,out.width,out.height).data;const palette=quantize
       buildAutoMask(1,lmc,localMask);
 render(sc,outW,outH,localMask,actualDuration+500,0);
 
-oc.fillStyle='#382820';
+oc.fillStyle='#3a2822';
 oc.fillRect(0,0,out.width,out.height);
 oc.drawImage(scene,padding,padding,outW,outH);
 
-let rgba=oc.getImageData(0,0,out.width,out.height).data;;let palette=quantize(rgba,256,{format:'rgba4444'});let index=applyPalette(rgba,palette,'rgba4444');gif.writeFrame(index,outW,outH,{palette,delay:650,repeat:0});
+let rgba=oc.getImageData(0,0,out.width,out.height).data;;let palette=quantize(rgba,256,{format:'rgba4444'});let index=applyPalette(rgba,palette,'rgba4444');gif.writeFrame(index,out.width,out.height,{
+  palette,
+  delay:650,
+  repeat:0
+});
       gif.finish();const blob=new Blob([gif.bytes()],{type:'image/gif'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`frosted-moment-${Date.now()}.gif`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500);els.bar.style.width='100%';els.status.textContent='완성! GIF가 저장됐어요 ❄️';setTimeout(()=>{els.progress.classList.remove('show');els.status.textContent='';els.bar.style.width='0'},2200)
     }catch(err){console.error(err);els.status.textContent='GIF 저장 모듈을 불러오지 못했어요. 인터넷 연결 후 다시 시도해 주세요.';els.bar.style.width='0'}finally{els.gif.disabled=false}
   }
