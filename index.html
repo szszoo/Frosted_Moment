@@ -60,30 +60,27 @@
   .preview-top{width:100%;display:flex;align-items:center;justify-content:space-between;color:#84929c;font-size:11px;padding:0 6px}
   .live-dot{display:inline-flex;align-items:center;gap:6px}.live-dot:before{content:"";width:6px;height:6px;border-radius:50%;background:#89a7b8;box-shadow:0 0 0 4px rgba(137,167,184,.13)}
   .canvas-frame{
-  position:relative;
-  width:min(100%,560px);
-  aspect-ratio:3/4;
-  border-radius:14px;
-  padding:10px;
-
-  background:
-    linear-gradient(
-      145deg,
-      #2f211d 0%,
-      #493229 24%,
-      #5a4034 50%,
-      #3a2822 76%,
-      #211613 100%
-    );
-
-  box-shadow:
-    0 24px 60px rgba(36,47,54,.24),
-    inset 0 0 0 1px rgba(255,255,255,.08);
-
-  touch-action:none;
-  user-select:none;
-  -webkit-user-select:none;
-}
+    position:relative;
+    width:min(100%,560px);
+    aspect-ratio:3/4;
+    border-radius:14px;
+    padding:10px;
+    background:
+      linear-gradient(
+        145deg,
+        #2f211d 0%,
+        #493229 24%,
+        #5a4034 50%,
+        #3a2822 76%,
+        #211613 100%
+      );
+    box-shadow:
+      0 24px 60px rgba(36,47,54,.24),
+      inset 0 0 0 1px rgba(255,255,255,.08);
+    touch-action:none;
+    user-select:none;
+    -webkit-user-select:none;
+  }
   .canvas-frame:before{content:"";position:absolute;inset:4px;border-radius:11px;border:1px solid rgba(255,255,255,.08);pointer-events:none}
   canvas{display:block;width:100%;height:100%;border-radius:7px;background:#cbd7df;touch-action:none}
   .hint{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);padding:8px 12px;border-radius:999px;background:rgba(25,33,39,.52);backdrop-filter:blur(8px);color:#fff;font-size:10px;letter-spacing:-.01em;pointer-events:none;transition:.35s;white-space:nowrap}
@@ -115,31 +112,28 @@
       <span class="credit">@hee_archive_</span>
     </div>
 
-<section class="section">
-  <label class="upload" for="photoInput">
-    <input id="photoInput" type="file" accept="image/*" />
-    <span class="icon">🖼️</span>
-    <b>사진 불러오기</b>
-    <span>JPG · PNG · WEBP</span>
-  </label>
+    <section class="section">
+      <label class="upload" for="photoInput">
+        <input id="photoInput" type="file" accept="image/*" />
+        <span class="icon">🖼️</span>
+        <b>사진 불러오기</b>
+        <span>JPG · PNG · WEBP</span>
+      </label>
 
-  <!-- 사진 배율 조절 -->
-  <div class="control" style="margin-top:16px">
-    <label for="photoScale">사진 배율</label>
-    <span class="value" id="photoScaleVal">100%</span>
-    <input id="photoScale" type="range" min="100" max="200" value="100" />
-  </div>
+      <div class="control" style="margin-top:16px">
+        <label for="photoScale">사진 배율</label>
+        <span class="value" id="photoScaleVal">100%</span>
+        <input id="photoScale" type="range" min="100" max="200" value="100" />
+      </div>
 
-  <!-- 사진 위치 조정 -->
-  <button class="btn ghost" id="photoMoveBtn" type="button" style="width:100%">
-    ✥ 사진 위치 조정하기
-  </button>
+      <button class="btn ghost" id="photoMoveBtn" type="button" style="width:100%">
+        ✥ 사진 위치 조정하기
+      </button>
 
-  <p class="tip">
-    위치 조정 버튼을 켜고 미리보기에서 드래그하면 사진을 이동할 수 있어요.
-  </p>
-</section>
-
+      <p class="tip">
+        위치 조정 버튼을 켜고 미리보기에서 드래그하면 사진을 이동할 수 있어요.
+      </p>
+    </section>
 
     <section class="section">
       <div class="section-title"><strong>유리 느낌</strong><span class="mini">Frost</span></div>
@@ -185,27 +179,26 @@
       <p class="tip">미리보기 화면을 마우스나 손가락으로 직접 문질러도 서리가 닦여요. ‘입김 불기’를 누르면 닦인 부분 위로 다시 김이 차오릅니다.</p>
     </section>
 
-    
-<section class="section">
-  <div class="section-title">
-    <strong>저장</strong>
-    <span class="mini">GIF · PHOTO</span>
-  </div>
+    <section class="section">
+      <div class="section-title">
+        <strong>저장</strong>
+        <span class="mini">GIF · PHOTO</span>
+      </div>
 
-  <div class="btns">
-    <button class="btn primary" id="gifBtn">
-      GIF로 저장하기
-    </button>
-    <button class="btn ghost" id="pngBtn">
-      PNG로 저장하기
-    </button>
-  </div>
+      <div class="btns">
+        <button class="btn primary" id="gifBtn" type="button">
+          GIF로 저장하기
+        </button>
+        <button class="btn ghost" id="pngBtn" type="button">
+          PNG로 저장하기
+        </button>
+      </div>
 
-  <p class="tip">
-    사진은 브라우저 안에서만 처리되며 서버로 업로드되지 않아요.
-  </p>
-</section>
-</aside>
+      <p class="tip">
+        사진은 브라우저 안에서만 처리되며 서버로 업로드되지 않아요.
+      </p>
+    </section>
+  </aside>
 
   <main class="stage-wrap">
     <div class="preview-shell">
@@ -239,25 +232,35 @@
   const tctx=trail.getContext('2d');
 
   const els={
-        photo:document.getElementById('photoInput'),
+    photo:document.getElementById('photoInput'),
     photoScale:document.getElementById('photoScale'),
     photoScaleVal:document.getElementById('photoScaleVal'),
     photoMove:document.getElementById('photoMoveBtn'),
-    frost:document.getElementById('frost'), blur:document.getElementById('blur'), wipe:document.getElementById('wipeSize'), duration:document.getElementById('duration'),
-    sound:document.getElementById('soundToggle'), sparkle:document.getElementById('sparkleToggle'), play:document.getElementById('playBtn'), breath:document.getElementById('breathBtn'), reset:document.getElementById('resetBtn'), clear:document.getElementById('clearBtn'), gif:document.getElementById('gifBtn'), png:document.getElementById('pngBtn'), hint:document.getElementById('hint'), status:document.getElementById('status'), progress:document.getElementById('progress'), bar:document.getElementById('bar')
+    frost:document.getElementById('frost'),
+    blur:document.getElementById('blur'),
+    wipe:document.getElementById('wipeSize'),
+    duration:document.getElementById('duration'),
+    sound:document.getElementById('soundToggle'),
+    sparkle:document.getElementById('sparkleToggle'),
+    play:document.getElementById('playBtn'),
+    breath:document.getElementById('breathBtn'),
+    reset:document.getElementById('resetBtn'),
+    clear:document.getElementById('clearBtn'),
+    gif:document.getElementById('gifBtn'),
+    png:document.getElementById('pngBtn'),
+    hint:document.getElementById('hint'),
+    status:document.getElementById('status'),
+    progress:document.getElementById('progress'),
+    bar:document.getElementById('bar')
   };
-    let photo=null, drawing=false, lastPt=null, animId=0, breath=0, sparkT=0, currentAutoProgress=null;
 
-  // 사진 확대 및 위치 조절
-  let photoZoom=1;
-  let photoOffsetX=0;
-  let photoOffsetY=0;
-  let movingPhoto=false;
-  let photoDragging=false;
+  let photo=null, drawing=false, lastPt=null, animId=0, breath=0, sparkT=0, currentAutoProgress=null;
+  let photoZoom=1, photoOffsetX=0, photoOffsetY=0, movingPhoto=false, photoDragging=false;
   let audioCtx=null;
+
   const frostGlints=Array.from({length:30},(_,i)=>({x:(i*173.37)%W,y:(i*91.71)%H,r:5+(i%4)*1.8,ph:i*.83})).map((g,i)=>{
     const side=i%4;
-    if(side===0) return {...g,x:22+(i*63)% (W-44), y:18+((i*31)%120)};
+    if(side===0) return {...g,x:22+(i*63)%(W-44), y:18+((i*31)%120)};
     if(side===1) return {...g,x:W-(20+((i*47)%120)), y:35+((i*73)%(H-70))};
     if(side===2) return {...g,x:26+((i*59)%(W-52)), y:H-(22+((i*29)%130))};
     return {...g,x:18+((i*41)%130), y:30+((i*67)%(H-60))};
@@ -276,33 +279,24 @@
     const g=pctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#8fa4b1');g.addColorStop(.52,'#c5d0d6');g.addColorStop(1,'#e9ecec');pctx.fillStyle=g;pctx.fillRect(0,0,W,H);
     pctx.save();pctx.filter='blur(10px)';
     const lights=[[120,620,38],[230,670,22],[350,600,30],[510,650,40],[620,560,24]];
-    lights.forEach(([x,y,r],i)=>{let rg=pctx.createRadialGradient(x,y,0,x,y,r*3);rg.addColorStop(0,'rgba(255,193,102,.95)');rg.addColorStop(.22,'rgba(255,175,79,.55)');rg.addColorStop(1,'rgba(255,175,79,0)');pctx.fillStyle=rg;pctx.beginPath();pctx.arc(x,y,r*3,0,Math.PI*2);pctx.fill()});
+    lights.forEach(([x,y,r])=>{let rg=pctx.createRadialGradient(x,y,0,x,y,r*3);rg.addColorStop(0,'rgba(255,193,102,.95)');rg.addColorStop(.22,'rgba(255,175,79,.55)');rg.addColorStop(1,'rgba(255,175,79,0)');pctx.fillStyle=rg;pctx.beginPath();pctx.arc(x,y,r*3,0,Math.PI*2);pctx.fill()});
     pctx.restore();
     pctx.fillStyle='rgba(62,76,84,.18)';
     for(let i=0;i<10;i++){let x=(i*91+35)%W; pctx.beginPath();pctx.moveTo(x,H);pctx.lineTo(x+35,530-(i%3)*45);pctx.lineTo(x+78,H);pctx.fill()}
   }
 
-    function fitPhoto(){
+  function fitPhoto(){
     pctx.clearRect(0,0,W,H);
-
     if(!photo){
       drawPlaceholder();
       return;
     }
-
-    // 기본적으로 화면을 꽉 채우는 크기 계산
     const baseScale=Math.max(W/photo.width,H/photo.height);
-
-    // 사용자가 선택한 배율 적용
     const s=baseScale*photoZoom;
-
     const dw=photo.width*s;
     const dh=photo.height*s;
-
-    // 중앙을 기준으로 확대하고 드래그한 위치만큼 이동
     const x=(W-dw)/2+photoOffsetX;
     const y=(H-dh)/2+photoOffsetY;
-
     pctx.drawImage(photo,x,y,dw,dh);
   }
 
@@ -326,9 +320,9 @@
     for(let i=0;i<54;i++){
       const side=i%4;let x,y;
       if(side===0){x=rand()*W;y=10+rand()*130}
-      else if(side===1){x=W-10-rand()*125;y=rand()*H}
+      else if(side===1){x=W-10-rand()*125;y=10+rand()*(H-20)}
       else if(side===2){x=rand()*W;y=H-10-rand()*120}
-      else{x=10+rand()*125;y=rand()*H}
+      else{x=10+rand()*125;y=10+rand()*(H-20)}
       places.push([x,y,12+rand()*38,.18+rand()*.3]);
     }
     places.forEach(p=>snowflake(fctx,...p));
@@ -380,8 +374,6 @@
 
   function clearTrails(){ tctx.clearRect(0,0,W,H); }
 
-  // Each cloth pass clears a filled fan-shaped area, rather than a thick line.
-  // The two gently overlapping arcs mimic a broad windscreen-wiper sweep.
   function clothSweepGeometry(w,h){
     return [
       {x:w*.19,y:h*.81,r:w*.84,delay:0,span:.88},
@@ -392,7 +384,7 @@
   function drawClothFan(c,w,h,progress,drawMoisture=false){
     const from=-Math.PI*.91, to=-Math.PI*.075;
     if(progress<=0) return;
-    clothSweepGeometry(w,h).forEach((s,index)=>{
+    clothSweepGeometry(w,h).forEach((s)=>{
       const part=Math.max(0,Math.min(1,(progress-s.delay)/s.span));
       if(part<=0) return;
       const ease=1-Math.pow(1-part,1.55);
@@ -407,7 +399,6 @@
       c.fill();
       c.restore();
       if(drawMoisture){
-        // Very subtle residual wet curves near the cloth's outer edge.
         tctx.save();
         tctx.lineCap='round';
         for(let k=0;k<3;k++){
@@ -430,7 +421,6 @@
   }
 
   function buildDiagonalPath(targetW,targetH,r){
-    // Diagonal strokes still travel top to bottom.
     const left=Math.max(r*.92,targetW*.09);
     const right=Math.min(targetW-r*.92,targetW*.91);
     const top=Math.max(r*.92,targetH*.08);
@@ -507,12 +497,12 @@
     const sx=w/W, sy=h/H;
     c.globalCompositeOperation='screen';
 
-    frostGlints.forEach((g,i)=>{
+    frostGlints.forEach((g)=>{
       const pulse=.2+.8*Math.max(0,Math.sin(time*.0023+g.ph));
       if(pulse<.42) return;
       const mx=Math.max(0,Math.min(maskCanvas.width-1,Math.round(g.x*(maskCanvas.width/W))));
       const my=Math.max(0,Math.min(maskCanvas.height-1,Math.round(g.y*(maskCanvas.height/H))));
-      const data=mctx.getImageData(mx,my,1,1).data[3];
+      const data=maskCanvas.getContext('2d').getImageData(mx,my,1,1).data[3];
       if(data>28) return;
       drawStarGlint(c,g.x*sx,g.y*sy,g.r*(.82+.25*pulse)*Math.min(sx,sy),.14+.3*pulse);
     });
@@ -529,90 +519,44 @@
       f.life*=0.84;
     });
 
-    // 기본 닦기와 천으로 닦기 모두 동일한 반짝이는 포인터 적용
-if(currentAutoProgress!==null){
-  let pos;
-
-  if(currentWipeMode()==='cloth'){
-    // 천으로 닦기: 기존 부채꼴 경로 유지
-    pos=clothFrontPoint(currentAutoProgress);
-  }else{
-    // 기본 닦기: 실제 닦이는 경로를 따라 부드럽게 이동
-    const {points}=buildAutoPath(W,H);
-
-    let total=0;
-    const lens=[];
-
-    for(let i=1;i<points.length;i++){
-      const len=Math.hypot(
-        points[i].x-points[i-1].x,
-        points[i].y-points[i-1].y
-      );
-      lens.push(len);
-      total+=len;
-    }
-
-    let remain=total*currentAutoProgress;
-    pos=points[0];
-
-    for(let i=1;i<points.length;i++){
-      const a=points[i-1];
-      const b=points[i];
-      const len=lens[i-1];
-
-      if(remain>len){
-        remain-=len;
-        pos=b;
+    if(currentAutoProgress!==null){
+      let pos;
+      if(currentWipeMode()==='cloth'){
+        pos=clothFrontPoint(currentAutoProgress);
       }else{
-        const t=len?remain/len:0;
+        const {points}=buildAutoPath(W,H);
+        let total=0;
+        const lens=[];
+        for(let i=1;i<points.length;i++){
+          const len=Math.hypot(points[i].x-points[i-1].x,points[i].y-points[i-1].y);
+          lens.push(len);
+          total+=len;
+        }
+        let remain=total*currentAutoProgress;
+        pos=points[0];
+        for(let i=1;i<points.length;i++){
+          const a=points[i-1], b=points[i], len=lens[i-1];
+          if(remain>len){
+            remain-=len;
+            pos=b;
+          }else{
+            const t=len?remain/len:0;
+            pos={x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t};
+            break;
+          }
+        }
+      }
 
-        pos={
-          x:a.x+(b.x-a.x)*t,
-          y:a.y+(b.y-a.y)*t
-        };
-
-        break;
+      if(pos){
+        const size=12*Math.min(sx,sy);
+        drawStarGlint(c,pos.x*sx,pos.y*sy,size,.62);
+        const glow=c.createRadialGradient(pos.x*sx,pos.y*sy,0,pos.x*sx,pos.y*sy,size*2.2);
+        glow.addColorStop(0,'rgba(255,255,255,.32)');
+        glow.addColorStop(1,'rgba(255,255,255,0)');
+        c.fillStyle=glow;
+        c.beginPath(); c.arc(pos.x*sx,pos.y*sy,size*2.2,0,Math.PI*2); c.fill();
       }
     }
-  }
-
-  if(pos){
-    const size=12*Math.min(sx,sy);
-
-    // 반짝이는 별
-    drawStarGlint(
-      c,
-      pos.x*sx,
-      pos.y*sy,
-      size,
-      .62
-    );
-
-    // 별 주변의 은은한 빛
-    const glow=c.createRadialGradient(
-      pos.x*sx,
-      pos.y*sy,
-      0,
-      pos.x*sx,
-      pos.y*sy,
-      size*2.2
-    );
-
-    glow.addColorStop(0,'rgba(255,255,255,.32)');
-    glow.addColorStop(1,'rgba(255,255,255,0)');
-
-    c.fillStyle=glow;
-    c.beginPath();
-    c.arc(
-      pos.x*sx,
-      pos.y*sy,
-      size*2.2,
-      0,
-      Math.PI*2
-    );
-    c.fill();
-  }
-}
 
     c.restore();
   }
@@ -674,12 +618,10 @@ if(currentAutoProgress!==null){
     wctx.setTransform(1,0,0,1,0,0);wctx.clearRect(0,0,W,H);wctx.drawImage(frost,0,0,W,H);wctx.globalCompositeOperation='destination-out';wctx.drawImage(useMask,0,0,W,H);wctx.globalCompositeOperation='source-over';
     target.globalAlpha=.97;target.drawImage(work,0,0,targetW,targetH);target.globalAlpha=1;
 
-    // 닦인 곳은 선명한 원본을 다시 얹기
     if(reveal.width!==targetW||reveal.height!==targetH){reveal.width=targetW;reveal.height=targetH}
     rctx.setTransform(1,0,0,1,0,0);rctx.globalCompositeOperation='source-over';rctx.clearRect(0,0,targetW,targetH);
     rctx.drawImage(photoCanvas,0,0,targetW,targetH);rctx.globalCompositeOperation='destination-in';rctx.drawImage(useMask,0,0,targetW,targetH);rctx.globalCompositeOperation='source-over';target.drawImage(reveal,0,0);
 
-    if(trail.width!==targetW||trail.height!==targetH){ /* no-op size source canvas fixed */ }
     if(currentWipeMode()==='cloth'){
       target.save();
       target.filter=`blur(${2.2*Math.min(sx,sy)}px)`;
@@ -703,29 +645,23 @@ if(currentAutoProgress!==null){
   }
 
   function canvasPos(e){const r=canvas.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}}
-    // 미리보기 드래그 기능
+
   canvas.addEventListener('pointerdown',e=>{
     drawing=true;
     canvas.setPointerCapture(e.pointerId);
-
     lastPt=canvasPos(e);
 
-    // 사진 위치 조정 모드
     if(movingPhoto && photo){
       photoDragging=true;
       canvas.style.cursor='grabbing';
       return;
     }
 
-    // 기존 서리 닦기 기능
     photoDragging=false;
-
     solidStamp(mctx,lastPt.x,lastPt.y,+els.wipe.value,1);
-
     if(currentWipeMode()==='cloth'){
       addClothTrail(lastPt,lastPt,+els.wipe.value);
     }
-
     pushFlash(lastPt.x,lastPt.y,14,1);
     playWipeSound(.24);
     els.hint.classList.add('hide');
@@ -733,30 +669,23 @@ if(currentAutoProgress!==null){
 
   canvas.addEventListener('pointermove',e=>{
     if(!drawing)return;
-
     const p=canvasPos(e);
 
-    // 사진 이동
     if(photoDragging){
       photoOffsetX+=p.x-lastPt.x;
       photoOffsetY+=p.y-lastPt.y;
-
       lastPt=p;
       fitPhoto();
       return;
     }
 
-    // 기존 서리 닦기
     wipeLine(lastPt,p);
-
     if(currentWipeMode()==='cloth'){
       addClothTrail(lastPt,p,+els.wipe.value);
     }
-
     if(Math.random()>.45){
       pushFlash(p.x,p.y,12,.8);
     }
-
     lastPt=p;
   });
 
@@ -779,7 +708,8 @@ if(currentAutoProgress!==null){
     if(!els.sound.checked)return;const ac=ensureAudio();const len=Math.floor(ac.sampleRate*duration);const buf=ac.createBuffer(1,len,ac.sampleRate);const data=buf.getChannelData(0);for(let i=0;i<len;i++)data[i]=(Math.random()*2-1)*(kind==='wipe'?(.35+.65*Math.sin(Math.PI*i/len)):1);
     const src=ac.createBufferSource();src.buffer=buf;const filter=ac.createBiquadFilter();filter.type=kind==='wipe'?'bandpass':'lowpass';filter.frequency.value=kind==='wipe'?1650:760;filter.Q.value=kind==='wipe'?.7:.3;const gain=ac.createGain();const now=ac.currentTime;gain.gain.setValueAtTime(0,now);gain.gain.linearRampToValueAtTime(kind==='wipe'?.171:.216,now+.05);gain.gain.exponentialRampToValueAtTime(.001,now+duration);src.connect(filter).connect(gain).connect(ac.destination);src.start();src.stop(now+duration)
   }
-  function playWipeSound(d=.7){noiseSound(d,'wipe')}function playBreathSound(){noiseSound(1.15,'breath')}
+  function playWipeSound(d=.7){noiseSound(d,'wipe')}
+  function playBreathSound(){noiseSound(1.15,'breath')}
 
   function animateWipe(){
     cancelAnimationFrame(animId);els.hint.classList.add('hide');
@@ -787,268 +717,216 @@ if(currentAutoProgress!==null){
     const dur=Math.round(durationMs()*(mode==='diagonal'?1.12:.85));
     playWipeSound(Math.min(1.55,dur/1000));
     const start=performance.now();
-    function tick(now){const p=Math.min(1,(now-start)/dur);currentAutoProgress=p;buildAutoMask(p);if(Math.random()>.58){let pos;if(mode==='cloth'){pos=clothFrontPoint(p);}else{const {points}=buildAutoPath(W,H);const idx=Math.min(points.length-1,Math.floor((points.length-1)*p));pos=points[idx]||points[0];}if(pos) pushFlash(pos.x,pos.y,14,.95);} if(p<1)animId=requestAnimationFrame(tick);else currentAutoProgress=null}animId=requestAnimationFrame(tick)
+    function tick(now){
+      const p=Math.min(1,(now-start)/dur);
+      currentAutoProgress=p;
+      buildAutoMask(p);
+      if(Math.random()>.58){
+        let pos;
+        if(mode==='cloth'){pos=clothFrontPoint(p);}
+        else{const {points}=buildAutoPath(W,H);const idx=Math.min(points.length-1,Math.floor((points.length-1)*p));pos=points[idx]||points[0];}
+        if(pos) pushFlash(pos.x,pos.y,14,.95);
+      }
+      if(p<1)animId=requestAnimationFrame(tick);
+      else currentAutoProgress=null;
+    }
+    animId=requestAnimationFrame(tick);
   }
+
   function breathAgain(){
     playBreathSound();const start=performance.now(),dur=1250;const original=document.createElement('canvas');original.width=W;original.height=H;original.getContext('2d').drawImage(mask,0,0);
     function tick(now){const p=Math.min(1,(now-start)/dur);breath=Math.sin(p*Math.PI)*.92; mctx.clearRect(0,0,W,H);mctx.globalAlpha=Math.max(0,1-p);mctx.drawImage(original,0,0);mctx.globalAlpha=1;if(p<1)requestAnimationFrame(tick);else{breath=0;mctx.clearRect(0,0,W,H);els.hint.classList.remove('hide')}} requestAnimationFrame(tick)
   }
 
-  els.play.onclick=animateWipe;els.breath.onclick=breathAgain;els.reset.onclick=()=>{cancelAnimationFrame(animId);mctx.clearRect(0,0,W,H);clearTrails();breath=0;flashGlints=[];els.hint.classList.remove('hide')};
+  els.play.onclick=animateWipe;
+  els.breath.onclick=breathAgain;
+  els.reset.onclick=()=>{cancelAnimationFrame(animId);mctx.clearRect(0,0,W,H);clearTrails();breath=0;flashGlints=[];els.hint.classList.remove('hide')};
   els.clear.onclick=()=>{mctx.fillStyle='#fff';mctx.fillRect(0,0,W,H);clearTrails();flashGlints=[];els.hint.classList.add('hide')};
 
-  els.photo.addEventListener('change',e=>{const file=e.target.files?.[0];if(!file)return;const img=new Image();img.onload=()=>{
-  photo=img;
+  els.photo.addEventListener('change',e=>{
+    const file=e.target.files?.[0];if(!file)return;
+    const img=new Image();
+    img.onload=()=>{
+      photo=img;
+      photoZoom=1;
+      photoOffsetX=0;
+      photoOffsetY=0;
+      els.photoScale.value=100;
+      els.photoScaleVal.textContent='100%';
+      fitPhoto();
+      mctx.clearRect(0,0,W,H);
+      clearTrails();
+      URL.revokeObjectURL(img.src);
+      els.hint.classList.remove('hide');
+    };
+    img.src=URL.createObjectURL(file);
+  });
 
-  // 새 사진은 기본 배율과 중앙 위치로 시작
-  photoZoom=1;
-  photoOffsetX=0;
-  photoOffsetY=0;
-
-  els.photoScale.value=100;
-  els.photoScaleVal.textContent='100%';
-
-  fitPhoto();
-
-  mctx.clearRect(0,0,W,H);
-  clearTrails();
-
-  URL.revokeObjectURL(img.src);
-  els.hint.classList.remove('hide');
-};img.src=URL.createObjectURL(file)});
   els.frost.addEventListener('input',()=>{document.getElementById('frostVal').textContent=els.frost.value+'%';buildFrost()});
   els.blur.addEventListener('input',()=>document.getElementById('blurVal').textContent=els.blur.value+'px');
   els.wipe.addEventListener('input',()=>document.getElementById('wipeVal').textContent=els.wipe.value);
   els.duration.addEventListener('input',()=>document.getElementById('durationVal').textContent=(+els.duration.value/10).toFixed(1)+'s');
-    // 사진 배율 조절
+
   els.photoScale.addEventListener('input',()=>{
     photoZoom=Number(els.photoScale.value)/100;
     els.photoScaleVal.textContent=els.photoScale.value+'%';
     fitPhoto();
   });
 
-  // 사진 위치 조정 모드 켜기 / 끄기
   els.photoMove.onclick=()=>{
     movingPhoto=!movingPhoto;
-
-    els.photoMove.textContent=movingPhoto
-      ? '✓ 사진 위치 조정 중'
-      : '✥ 사진 위치 조정하기';
-
+    els.photoMove.textContent=movingPhoto ? '✓ 사진 위치 조정 중' : '✥ 사진 위치 조정하기';
     els.photoMove.classList.toggle('primary',movingPhoto);
     els.photoMove.classList.toggle('ghost',!movingPhoto);
-
     canvas.style.cursor=movingPhoto?'grab':'crosshair';
   };
 
-  async function exportGIF(){
-  els.gif.disabled=true;
-  els.progress.classList.add('show');
-  els.status.textContent='GIF 엔진 불러오는 중…';
-  els.bar.style.width='3%';
-
-  try{
-    const {GIFEncoder,quantize,applyPalette}=await import(
-      'https://cdn.jsdelivr.net/npm/gifenc@1.0.3/+esm'
-    );
-
-    const outW=720;
-    const outH=960;
-    const padding=10;
-    const format='rgb565';
-
-    const scene=document.createElement('canvas');
-    scene.width=outW;
-    scene.height=outH;
-    const sc=scene.getContext('2d');
-
-    const out=document.createElement('canvas');
-    out.width=outW+padding*2;
-    out.height=outH+padding*2;
-
-    const oc=out.getContext('2d',{willReadFrequently:true});
-
-    const localMask=document.createElement('canvas');
-    localMask.width=W;
-    localMask.height=H;
-    const lmc=localMask.getContext('2d');
-
-    const gif=GIFEncoder();
-    const frames=24;
-    const actualDuration=Math.round(
-      durationMs()*(currentWipeMode()==='diagonal'?1.12:.85)
-    );
-    const delay=Math.max(35,Math.round(actualDuration/frames));
-
-    function drawBackground(){
-      const bg=oc.createLinearGradient(
-        0,0,out.width,out.height
-      );
-
-      bg.addColorStop(0,'#2f211d');
-      bg.addColorStop(.24,'#493229');
-      bg.addColorStop(.5,'#5a4034');
-      bg.addColorStop(.76,'#3a2822');
-      bg.addColorStop(1,'#211613');
-
-      oc.fillStyle=bg;
-      oc.fillRect(0,0,out.width,out.height);
-    }
-
-    function writeGifFrame(progress,time,frameDelay){
-      buildAutoMask(progress,lmc,localMask);
-
-      render(sc,outW,outH,localMask,time,0);
-
-      drawBackground();
-      oc.drawImage(scene,padding,padding,outW,outH);
-
-      const rgba=oc.getImageData(
-        0,0,out.width,out.height
-      ).data;
-
-      const palette=quantize(rgba,256,{format});
-      const index=applyPalette(rgba,palette,format);
-
-      gif.writeFrame(
-        index,
-        out.width,
-        out.height,
-        {
-          palette,
-          delay:frameDelay,
-          repeat:0
-        }
-      );
-    }
-
-    for(let i=0;i<frames;i++){
-      const p=i/(frames-1);
-
-      writeGifFrame(p,i*delay,delay);
-
-      els.bar.style.width=
-        `${Math.round((i+1)/frames*94)}%`;
-
-      els.status.textContent=
-        `GIF 만드는 중… ${i+1} / ${frames}`;
-
-      await new Promise(r=>setTimeout(r,0));
-    }
-
-    // 마지막 장면 유지
-    writeGifFrame(1,actualDuration+500,650);
-
-    gif.finish();
-
-    const blob=new Blob(
-      [gif.bytes()],
-      {type:'image/gif'}
-    );
-
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download=`frosted-moment-${Date.now()}.gif`;
-
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-
-    setTimeout(()=>URL.revokeObjectURL(a.href),1500);
-
-    els.bar.style.width='100%';
-    els.status.textContent='완성! GIF가 저장됐어요 ❄️';
-
-    setTimeout(()=>{
-      els.progress.classList.remove('show');
-      els.status.textContent='';
-      els.bar.style.width='0';
-    },2200);
-
-  }catch(err){
-    console.error('GIF 저장 오류:',err);
-
-    els.status.textContent=
-      'GIF 저장에 실패했어요. 브라우저 콘솔을 확인해 주세요.';
-
-    els.bar.style.width='0';
-
-  }finally{
-    els.gif.disabled=false;
+  function drawWoodOuter(c,w,h){
+    const bg=c.createLinearGradient(0,0,w,h);
+    bg.addColorStop(0,'#2f211d');
+    bg.addColorStop(.24,'#493229');
+    bg.addColorStop(.5,'#5a4034');
+    bg.addColorStop(.76,'#3a2822');
+    bg.addColorStop(1,'#211613');
+    c.fillStyle=bg;
+    c.fillRect(0,0,w,h);
   }
-}
+
+  function exportStill(mime='image/png'){
+    els.png.disabled=true;
+    els.status.textContent='PNG 이미지 만드는 중…';
+    try{
+      const padding=10;
+      const out=document.createElement('canvas');
+      out.width=W+padding*2;
+      out.height=H+padding*2;
+      const oc=out.getContext('2d');
+
+      const scene=document.createElement('canvas');
+      scene.width=W;
+      scene.height=H;
+      const sc=scene.getContext('2d');
+      render(sc,W,H,mask,sparkT||performance.now(),breath);
+
+      drawWoodOuter(oc,out.width,out.height);
+      oc.drawImage(scene,padding,padding,W,H);
+
+      out.toBlob(blob=>{
+        if(!blob){
+          els.status.textContent='PNG 저장에 실패했어요.';
+          els.png.disabled=false;
+          return;
+        }
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url;
+        a.download=`frosted-moment-${Date.now()}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),1500);
+
+        els.status.textContent='완성! PNG가 저장됐어요 ❄️';
+        setTimeout(()=>{
+          if(els.status.textContent==='완성! PNG가 저장됐어요 ❄️') els.status.textContent='';
+        },2200);
+        els.png.disabled=false;
+      },mime);
+    }catch(err){
+      console.error('PNG 저장 오류:',err);
+      els.status.textContent='PNG 저장 중 오류가 발생했어요.';
+      els.png.disabled=false;
+    }
+  }
 
   async function exportGIF(){
-    els.gif.disabled=true;els.progress.classList.add('show');els.status.textContent='GIF 엔진 불러오는 중…';els.bar.style.width='3%';
+    els.gif.disabled=true;
+    els.progress.classList.add('show');
+    els.status.textContent='GIF 엔진 불러오는 중…';
+    els.bar.style.width='3%';
+
     try{
       const {GIFEncoder,quantize,applyPalette}=await import('https://cdn.jsdelivr.net/npm/gifenc@1.0.3/+esm');
       const outW=720;
-const outH=960;
-const padding=Math.round(outW*10/720);
+      const outH=960;
+      const padding=10;
+      const format='rgb565';
 
-const scene=document.createElement('canvas');
-scene.width=outW;
-scene.height=outH;
-const sc=scene.getContext('2d',{willReadFrequently:true});
+      const scene=document.createElement('canvas');
+      scene.width=outW;
+      scene.height=outH;
+      const sc=scene.getContext('2d',{willReadFrequently:true});
 
-const out=document.createElement('canvas');
-out.width=outW+padding*2;
-out.height=outH+padding*2;
-const oc=out.getContext('2d',{willReadFrequently:true});
-      const localMask=document.createElement('canvas');localMask.width=W;localMask.height=H;const lmc=localMask.getContext('2d');
-      const gif=GIFEncoder();const frames=24;const actualDuration=Math.round(durationMs()*(currentWipeMode()==='diagonal'?1.12:.85));const delay=Math.max(35,Math.round(actualDuration/frames));
-      for(let i=0;i<frames;i++){
-        const p=i/(frames-1);buildAutoMask(p,lmc,localMask);render(sc,outW,outH,localMask,i*delay,0);
+      const out=document.createElement('canvas');
+      out.width=outW+padding*2;
+      out.height=outH+padding*2;
+      const oc=out.getContext('2d',{willReadFrequently:true});
 
-const bg = oc.createLinearGradient(
-  0, 0,
-  oc.width, oc.height
-);
+      const localMask=document.createElement('canvas');
+      localMask.width=W;
+      localMask.height=H;
+      const lmc=localMask.getContext('2d');
 
-bg.addColorStop(0, '#2f211d');
-bg.addColorStop(0.24, '#493229');
-bg.addColorStop(0.5, '#5a4034');
-bg.addColorStop(0.76, '#3a2822');
-bg.addColorStop(1, '#211613');
+      const gif=GIFEncoder();
+      const frames=24;
+      const actualDuration=Math.round(durationMs()*(currentWipeMode()==='diagonal'?1.12:.85));
+      const delay=Math.max(35,Math.round(actualDuration/frames));
 
-oc.fillStyle = bg;
-oc.fillRect(0,0,out.width,out.height);
-oc.drawImage(scene,padding,padding,outW,outH);
+      function writeGifFrame(progress,time,frameDelay){
+        buildAutoMask(progress,lmc,localMask);
+        render(sc,outW,outH,localMask,time,0);
+        drawWoodOuter(oc,out.width,out.height);
+        oc.drawImage(scene,padding,padding,outW,outH);
 
-const rgba=oc.getImageData(0,0,out.width,out.height).data;const palette = quantize(rgba, 256, {format:'rgba4444'});
-const index = applyPalette(rgba, palette, 'rgba4444');gif.writeFrame(index,out.width,out.height,{palette,delay,repeat:0});
-        els.bar.style.width=`${Math.round((i+1)/frames*94)}%`;els.status.textContent=`GIF 만드는 중… ${i+1} / ${frames}`;await new Promise(r=>setTimeout(r,0));
+        const rgba=oc.getImageData(0,0,out.width,out.height).data;
+        const palette=quantize(rgba,256,{format});
+        const index=applyPalette(rgba,palette,format);
+        gif.writeFrame(index,out.width,out.height,{palette,delay:frameDelay,repeat:0});
       }
-      // 마지막 장면을 잠깐 유지
-      buildAutoMask(1,lmc,localMask);
-render(sc,outW,outH,localMask,actualDuration+500,0);
 
-const bg = oc.createLinearGradient(
-  0, 0,
-  oc.width, oc.height
-);
+      for(let i=0;i<frames;i++){
+        const p=i/(frames-1);
+        writeGifFrame(p,i*delay,delay);
+        els.bar.style.width=`${Math.round((i+1)/frames*94)}%`;
+        els.status.textContent=`GIF 만드는 중… ${i+1} / ${frames}`;
+        await new Promise(r=>setTimeout(r,0));
+      }
 
-bg.addColorStop(0, '#2f211d');
-bg.addColorStop(0.24, '#493229');
-bg.addColorStop(0.5, '#5a4034');
-bg.addColorStop(0.76, '#3a2822');
-bg.addColorStop(1, '#211613');
+      writeGifFrame(1,actualDuration+500,650);
+      gif.finish();
 
-oc.fillStyle = bg;
-oc.fillRect(0,0,out.width,out.height);
-oc.drawImage(scene,padding,padding,outW,outH);
+      const blob=new Blob([gif.bytes()],{type:'image/gif'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;
+      a.download=`frosted-moment-${Date.now()}.gif`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1500);
 
-let rgba=oc.getImageData(0,0,out.width,out.height).data;;let palette=quantize(rgba,256,{format:'rgba4444'});let index=applyPalette(rgba,palette,'rgba4444');gif.writeFrame(index,out.width,out.height,{
-  palette,
-  delay:650,
-  repeat:0
-});
-      gif.finish();const blob=new Blob([gif.bytes()],{type:'image/gif'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`frosted-moment-${Date.now()}.gif`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500);els.bar.style.width='100%';els.status.textContent='완성! GIF가 저장됐어요 ❄️';setTimeout(()=>{els.progress.classList.remove('show');els.status.textContent='';els.bar.style.width='0'},2200)
-    }catch(err){console.error(err);els.status.textContent='GIF 저장 모듈을 불러오지 못했어요. 인터넷 연결 후 다시 시도해 주세요.';els.bar.style.width='0'}finally{els.gif.disabled=false}
+      els.bar.style.width='100%';
+      els.status.textContent='완성! GIF가 저장됐어요 ❄️';
+      setTimeout(()=>{
+        els.progress.classList.remove('show');
+        els.status.textContent='';
+        els.bar.style.width='0';
+      },2200);
+    }catch(err){
+      console.error('GIF 저장 오류:',err);
+      els.status.textContent='GIF 저장에 실패했어요. 인터넷 연결이나 콘솔을 확인해 주세요.';
+      els.bar.style.width='0';
+    }finally{
+      els.gif.disabled=false;
+    }
   }
+
   els.gif.onclick=exportGIF;
   els.png.onclick=()=>exportStill('image/png');
-  fitPhoto();buildFrost();requestAnimationFrame(loop);
+
+  fitPhoto();
+  buildFrost();
+  requestAnimationFrame(loop);
 })();
 </script>
 </body>
