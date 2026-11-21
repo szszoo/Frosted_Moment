@@ -943,7 +943,8 @@ oc.fillStyle = bg;
 oc.fillRect(0,0,out.width,out.height);
 oc.drawImage(scene,padding,padding,outW,outH);
 
-const rgba=oc.getImageData(0,0,out.width,out.height).data;const palette=quantize(rgba,256,{format:'rgba4444'});const index=applyPalette(rgba,palette,'rgba4444');gif.writeFrame(index,out.width,out.height,{palette,delay,repeat:0});
+const rgba=oc.getImageData(0,0,out.width,out.height).data;const palette = quantize(rgba, 256, {format:'rgb565'});
+const index = applyPalette(rgba, palette, 'rgb565');gif.writeFrame(index,out.width,out.height,{palette,delay,repeat:0});
         els.bar.style.width=`${Math.round((i+1)/frames*94)}%`;els.status.textContent=`GIF 만드는 중… ${i+1} / ${frames}`;await new Promise(r=>setTimeout(r,0));
       }
       // 마지막 장면을 잠깐 유지
