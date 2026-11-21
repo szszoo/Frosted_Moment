@@ -59,7 +59,7 @@
   .preview-shell{width:min(100%,760px);display:flex;flex-direction:column;align-items:center;gap:14px}
   .preview-top{width:100%;display:flex;align-items:center;justify-content:space-between;color:#84929c;font-size:11px;padding:0 6px}
   .live-dot{display:inline-flex;align-items:center;gap:6px}.live-dot:before{content:"";width:6px;height:6px;border-radius:50%;background:#89a7b8;box-shadow:0 0 0 4px rgba(137,167,184,.13)}
-  .canvas-frame{position:relative;width:min(100%,560px);aspect-ratio:3/4;border-radius:14px;padding:10px;background:linear-gradient(145deg,#3d302b,#1e1917 60%,#49372f);box-shadow:0 24px 60px rgba(36,47,54,.24),inset 0 0 0 1px rgba(255,255,255,.08);touch-action:none;user-select:none;-webkit-user-select:none}
+  .canvas-frame{position:relative;width:min(100%,560px);aspect-ratio:3/4;border-radius:14px;padding:10px;background:linear-gradient(145deg,#2f211d,#4f382f 38%,#2a1d19 68%,#1f1512);box-shadow:0 24px 60px rgba(36,47,54,.24),inset 0 0 0 1px rgba(255,255,255,.08);touch-action:none;user-select:none;-webkit-user-select:none}
   .canvas-frame:before{content:"";position:absolute;inset:4px;border-radius:11px;border:1px solid rgba(255,255,255,.08);pointer-events:none}
   canvas{display:block;width:100%;height:100%;border-radius:7px;background:#cbd7df;touch-action:none}
   .hint{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);padding:8px 12px;border-radius:999px;background:rgba(25,33,39,.52);backdrop-filter:blur(8px);color:#fff;font-size:10px;letter-spacing:-.01em;pointer-events:none;transition:.35s;white-space:nowrap}
@@ -125,6 +125,11 @@
     <section class="section">
       <div class="section-title"><strong>움직임</strong><span class="mini">Motion</span></div>
       <div class="control"><label for="duration">닦기 속도</label><span class="value" id="durationVal">2.8s</span><input id="duration" type="range" min="16" max="48" value="28" /></div>
+      <div class="section-title" style="margin-top:12px"><strong>자동 닦기 모양</strong></div>
+      <div class="seg two">
+        <input type="radio" name="wipeMode" id="wipeCloth" value="cloth" checked><label for="wipeCloth">천으로 닦기</label>
+        <input type="radio" name="wipeMode" id="wipeDiagonal" value="diagonal"><label for="wipeDiagonal">대각선으로 닦기</label>
+      </div>
       <div class="switch-row"><span>사각거리는 유리 소리</span><label class="switch"><input id="soundToggle" type="checkbox" checked><span class="slider"></span></label></div>
       <div class="switch-row"><span>겨울빛 반짝임</span><label class="switch"><input id="sparkleToggle" type="checkbox" checked><span class="slider"></span></label></div>
       <div class="btns">
@@ -137,13 +142,15 @@
     </section>
 
     <section class="section">
-      <div class="section-title"><strong>저장</strong><span class="mini">GIF</span></div>
+      <div class="section-title"><strong>저장</strong><span class="mini">GIF · PHOTO</span></div>
       <div class="seg two">
         <input type="radio" name="gifSize" id="gif480" value="480" checked><label for="gif480">480 × 640</label>
         <input type="radio" name="gifSize" id="gif720" value="720"><label for="gif720">720 × 960</label>
       </div>
       <div class="btns">
         <button class="btn save" id="gifBtn">GIF로 저장하기</button>
+        <button class="btn ghost" id="pngBtn">PNG로 저장하기</button>
+        <button class="btn ghost" id="jpgBtn">JPG로 저장하기</button>
       </div>
       <p class="tip">사진은 브라우저 안에서만 처리되며 서버로 업로드되지 않아요.</p>
     </section>
@@ -177,20 +184,30 @@
   const pctx=photoCanvas.getContext('2d');
   const reveal=document.createElement('canvas'); reveal.width=W; reveal.height=H;
   const rctx=reveal.getContext('2d');
+  const trail=document.createElement('canvas'); trail.width=W; trail.height=H;
+  const tctx=trail.getContext('2d');
 
   const els={
     photo:document.getElementById('photoInput'), frost:document.getElementById('frost'), blur:document.getElementById('blur'), wipe:document.getElementById('wipeSize'), duration:document.getElementById('duration'),
-    sound:document.getElementById('soundToggle'), sparkle:document.getElementById('sparkleToggle'), play:document.getElementById('playBtn'), breath:document.getElementById('breathBtn'), reset:document.getElementById('resetBtn'), clear:document.getElementById('clearBtn'), gif:document.getElementById('gifBtn'), hint:document.getElementById('hint'), status:document.getElementById('status'), progress:document.getElementById('progress'), bar:document.getElementById('bar')
+    sound:document.getElementById('soundToggle'), sparkle:document.getElementById('sparkleToggle'), play:document.getElementById('playBtn'), breath:document.getElementById('breathBtn'), reset:document.getElementById('resetBtn'), clear:document.getElementById('clearBtn'), gif:document.getElementById('gifBtn'), png:document.getElementById('pngBtn'), jpg:document.getElementById('jpgBtn'), hint:document.getElementById('hint'), status:document.getElementById('status'), progress:document.getElementById('progress'), bar:document.getElementById('bar')
   };
   let photo=null, drawing=false, lastPt=null, animId=0, breath=0, sparkT=0, currentAutoProgress=null;
   let audioCtx=null;
-  const particles=Array.from({length:34},(_,i)=>({x:(i*149.37)%W,y:(i*83.11)%H,r:1.2+(i%5)*.7,s:.25+(i%7)*.06,ph:i*1.13}));
+  const frostGlints=Array.from({length:30},(_,i)=>({x:(i*173.37)%W,y:(i*91.71)%H,r:5+(i%4)*1.8,ph:i*.83})).map((g,i)=>{
+    const side=i%4;
+    if(side===0) return {...g,x:22+(i*63)% (W-44), y:18+((i*31)%120)};
+    if(side===1) return {...g,x:W-(20+((i*47)%120)), y:35+((i*73)%(H-70))};
+    if(side===2) return {...g,x:26+((i*59)%(W-52)), y:H-(22+((i*29)%130))};
+    return {...g,x:18+((i*41)%130), y:30+((i*67)%(H-60))};
+  });
+  let flashGlints=[];
 
   function mulberry32(seed){return function(){let t=seed+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return ((t^t>>>14)>>>0)/4294967296}}
   const rand=mulberry32(20261118);
 
   function currentTone(){return document.querySelector('input[name="tone"]:checked').value}
   function currentFrame(){return document.querySelector('input[name="frame"]:checked').value}
+  function currentWipeMode(){return document.querySelector('input[name="wipeMode"]:checked').value}
   function durationMs(){return +els.duration.value*100}
 
   function drawPlaceholder(){
@@ -269,39 +286,98 @@
     solidStamp(targetCtx,b.x,b.y,r,1);
   }
 
+  function addClothTrail(a,b,r=+els.wipe.value,targetCtx=tctx,alpha=.28){
+    targetCtx.save();
+    targetCtx.strokeStyle=`rgba(255,255,255,${alpha})`;
+    targetCtx.lineCap='round';
+    targetCtx.lineJoin='round';
+    targetCtx.lineWidth=r*1.1;
+    targetCtx.beginPath();
+    targetCtx.moveTo(a.x,a.y);
+    targetCtx.lineTo(b.x,b.y);
+    targetCtx.stroke();
+    targetCtx.restore();
+  }
+
+  function clearTrails(){ tctx.clearRect(0,0,W,H); }
+
+  // Each cloth pass clears a filled fan-shaped area, rather than a thick line.
+  // The two gently overlapping arcs mimic a broad windscreen-wiper sweep.
+  function clothSweepGeometry(w,h){
+    return [
+      {x:w*.19,y:h*.81,r:w*.84,delay:0,span:.88},
+      {x:w*.57,y:h*.83,r:w*.84,delay:.12,span:.88}
+    ];
+  }
+
+  function drawClothFan(c,w,h,progress,drawMoisture=false){
+    const from=-Math.PI*.91, to=-Math.PI*.075;
+    if(progress<=0) return;
+    clothSweepGeometry(w,h).forEach((s,index)=>{
+      const part=Math.max(0,Math.min(1,(progress-s.delay)/s.span));
+      if(part<=0) return;
+      const ease=1-Math.pow(1-part,1.55);
+      const end=from+(to-from)*ease;
+      const inner=s.r*.15;
+      c.save();
+      c.beginPath();
+      c.arc(s.x,s.y,s.r,from,end,false);
+      c.arc(s.x,s.y,inner,end,from,true);
+      c.closePath();
+      c.fillStyle='#fff';
+      c.fill();
+      c.restore();
+      if(drawMoisture){
+        // Very subtle residual wet curves near the cloth's outer edge.
+        tctx.save();
+        tctx.lineCap='round';
+        for(let k=0;k<3;k++){
+          tctx.beginPath();
+          tctx.arc(s.x,s.y,s.r*(.88-k*.065),from+.15,end-.055,false);
+          tctx.lineWidth=1.8+k*1.2;
+          tctx.strokeStyle=`rgba(238,250,255,${.14-k*.025})`;
+          if(end-from>.25) tctx.stroke();
+        }
+        tctx.restore();
+      }
+    });
+  }
+
+  function clothFrontPoint(progress,w=W,h=H){
+    const sweep=clothSweepGeometry(w,h)[progress<.18?0:1];
+    const part=Math.max(0,Math.min(1,(progress-sweep.delay)/sweep.span));
+    const a=-Math.PI*.91+Math.PI*.835*(1-Math.pow(1-part,1.55));
+    return {x:sweep.x+sweep.r*.77*Math.cos(a),y:sweep.y+sweep.r*.77*Math.sin(a)};
+  }
+
+  function buildDiagonalPath(targetW,targetH,r){
+    // Diagonal strokes still travel top to bottom.
+    const left=Math.max(r*.92,targetW*.09);
+    const right=Math.min(targetW-r*.92,targetW*.91);
+    const top=Math.max(r*.92,targetH*.08);
+    const bottom=Math.min(targetH-r*.65,targetH*.93);
+    const levels=[0,.18,.235,.40,.455,.63,.685,.84,1];
+    return levels.map((t,i)=>({
+      x:i%2===0?right-(i%4===2?targetW*.07:0):left+((i%4===3)?targetW*.055:targetW*.1),
+      y:top+(bottom-top)*t
+    }));
+  }
+
   function buildAutoPath(targetW=W,targetH=H){
     const scale=targetW/W;
     const r=+els.wipe.value*scale;
-    const left=Math.max(r*.92,targetW*.12);
-    const right=Math.min(targetW-r*.92,targetW*.88);
-    const top=Math.max(r*.95,targetH*.13);
-    const bottom=Math.min(targetH-r*.95,targetH*.84);
-    const rowGap=Math.max(r*1.2,36*scale);
-    const rows=[];
-    for(let y=top;y<=bottom;y+=rowGap) rows.push(y);
-    if(rows.length===0 || bottom-rows[rows.length-1]>r*.55) rows.push(bottom);
-
-    const points=[];
-    rows.forEach((y,idx)=>{
-      const forward=idx%2===0;
-      const startX=forward?left:right;
-      const endX=forward?right:left;
-      if(idx===0) points.push({x:startX,y});
-      else points.push({x:startX,y});
-      points.push({x:endX,y});
-      if(idx<rows.length-1) points.push({x:endX,y:rows[idx+1]});
-    });
+    const points=buildDiagonalPath(targetW,targetH,r);
     return {points,r};
   }
 
   function buildAutoMask(progress,targetCtx=mctx,targetCanvas=mask){
     targetCtx.clearRect(0,0,targetCanvas.width,targetCanvas.height);
-    const {points,r}=buildAutoPath(targetCanvas.width,targetCanvas.height);
-    if(points.length<2){
-      if(points[0]) solidStamp(targetCtx,points[0].x,points[0].y,r,1);
+    if(targetCtx===mctx) clearTrails();
+    if(currentWipeMode()==='cloth'){
+      drawClothFan(targetCtx,targetCanvas.width,targetCanvas.height,progress,targetCtx===mctx);
       return;
     }
-
+    const {points,r}=buildAutoPath(targetCanvas.width,targetCanvas.height);
     let total=0;
     const segLens=[];
     for(let i=1;i<points.length;i++){
@@ -311,8 +387,7 @@
     }
     let remain=total*Math.max(0,Math.min(1,progress));
     const first=points[0];
-    solidStamp(targetCtx,first.x,first.y,r,1);
-
+    if(progress>0) solidStamp(targetCtx,first.x,first.y,r,1);
     for(let i=1;i<points.length && remain>0;i++){
       const a=points[i-1],b=points[i],len=segLens[i-1];
       if(remain>=len){
@@ -327,28 +402,120 @@
     }
   }
 
+  function pushFlash(x,y,r=18,strength=1){
+    flashGlints.push({x,y,r,strength,life:1});
+    if(flashGlints.length>18) flashGlints=flashGlints.slice(-18);
+  }
+
+  function drawStarGlint(c,x,y,r,alpha){
+    c.save();
+    c.translate(x,y);
+    c.strokeStyle=`rgba(255,255,255,${alpha})`;
+    c.lineWidth=Math.max(1,r*.12);
+    c.lineCap='round';
+    c.beginPath();
+    c.moveTo(-r,0); c.lineTo(r,0);
+    c.moveTo(0,-r); c.lineTo(0,r);
+    c.moveTo(-r*.62,-r*.62); c.lineTo(r*.62,r*.62);
+    c.moveTo(-r*.62,r*.62); c.lineTo(r*.62,-r*.62);
+    c.stroke();
+    c.restore();
+  }
+
+  function drawSparkles(c,w,h,time,maskCanvas){
+    if(!els.sparkle.checked)return;
+    c.save();
+    const sx=w/W, sy=h/H;
+    c.globalCompositeOperation='screen';
+
+    frostGlints.forEach((g,i)=>{
+      const pulse=.2+.8*Math.max(0,Math.sin(time*.0023+g.ph));
+      if(pulse<.42) return;
+      const mx=Math.max(0,Math.min(maskCanvas.width-1,Math.round(g.x*(maskCanvas.width/W))));
+      const my=Math.max(0,Math.min(maskCanvas.height-1,Math.round(g.y*(maskCanvas.height/H))));
+      const data=mctx.getImageData(mx,my,1,1).data[3];
+      if(data>28) return;
+      drawStarGlint(c,g.x*sx,g.y*sy,g.r*(.82+.25*pulse)*Math.min(sx,sy),.14+.3*pulse);
+    });
+
+    flashGlints = flashGlints.filter(f=>f.life>0.03);
+    flashGlints.forEach(f=>{
+      const alpha=f.life*.55*f.strength;
+      drawStarGlint(c,f.x*sx,f.y*sy,f.r*(1.05-f.life*.25)*Math.min(sx,sy),alpha);
+      const rg=c.createRadialGradient(f.x*sx,f.y*sy,0,f.x*sx,f.y*sy,f.r*2.2*Math.min(sx,sy));
+      rg.addColorStop(0,`rgba(255,255,255,${alpha*.38})`);
+      rg.addColorStop(1,'rgba(255,255,255,0)');
+      c.fillStyle=rg;
+      c.beginPath(); c.arc(f.x*sx,f.y*sy,f.r*2.2*Math.min(sx,sy),0,Math.PI*2); c.fill();
+      f.life*=0.84;
+    });
+
+    if(currentAutoProgress!==null && currentWipeMode()==='cloth'){
+      const pos=clothFrontPoint(currentAutoProgress);
+      drawStarGlint(c,pos.x*sx,pos.y*sy,12*Math.min(sx,sy),.62);
+    }
+    if(currentAutoProgress!==null && currentWipeMode()==='diagonal'){
+      const {points,r}=buildAutoPath(W,H);
+      if(points.length>1){
+        let total=0; const lens=[];
+        for(let i=1;i<points.length;i++){ const len=Math.hypot(points[i].x-points[i-1].x,points[i].y-points[i-1].y); lens.push(len); total+=len; }
+        let remain=total*currentAutoProgress;
+        let pos=points[0];
+        for(let i=1;i<points.length;i++){
+          const a=points[i-1],b=points[i],len=lens[i-1];
+          if(remain>len){ remain-=len; pos=b; }
+          else { const t=len?remain/len:0; pos={x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t}; break; }
+        }
+        drawStarGlint(c,pos.x*sx,pos.y*sy,r*.38*Math.min(sx,sy),.62);
+      }
+    }
+
+    c.restore();
+  }
+
   function tintOverlay(c,w,h){
     const tone=currentTone();
     if(tone==='cool'){c.fillStyle='rgba(131,170,196,.08)';c.fillRect(0,0,w,h)}
     if(tone==='warm'){c.fillStyle='rgba(255,170,92,.08)';c.fillRect(0,0,w,h)}
   }
 
-  function drawSparkles(c,w,h,time){
-    if(!els.sparkle.checked)return;
-    c.save();c.globalCompositeOperation='screen';
-    const sx=w/W,sy=h/H;
-    particles.forEach((p,i)=>{const yy=(p.y + ((time*.035*p.s+i*5)%H))%H;const alpha=.08+.13*(.5+.5*Math.sin(time*.002+p.ph));c.fillStyle=`rgba(238,249,255,${alpha})`;c.beginPath();c.arc(p.x*sx,yy*sy,p.r*Math.min(sx,sy),0,Math.PI*2);c.fill()});c.restore();
+  function woodBar(c,x,y,wid,hei,vertical=true){
+    const grad=vertical ? c.createLinearGradient(x,0,x+wid,0) : c.createLinearGradient(0,y,0,y+hei);
+    grad.addColorStop(0,'#2f211d');
+    grad.addColorStop(.24,'#493229');
+    grad.addColorStop(.5,'#5a4034');
+    grad.addColorStop(.76,'#3a2822');
+    grad.addColorStop(1,'#211613');
+    c.fillStyle=grad;
+    c.fillRect(x,y,wid,hei);
+
+    c.save();
+    c.globalAlpha=.18;
+    for(let i=0;i<10;i++){
+      c.fillStyle=i%2===0?'rgba(255,255,255,.16)':'rgba(32,18,13,.28)';
+      if(vertical){
+        const gx=x+(i/10)*wid;
+        c.fillRect(gx,y,Math.max(1,wid*.06),hei);
+      }else{
+        const gy=y+(i/10)*hei;
+        c.fillRect(x,gy,wid,Math.max(1,hei*.08));
+      }
+    }
+    c.restore();
+
+    c.strokeStyle='rgba(255,255,255,.14)';
+    c.lineWidth=Math.max(1,Math.min(wid,hei)*.08);
+    c.strokeRect(x+.5,y+.5,wid-1,hei-1);
   }
 
   function drawFrame(c,w,h){
     const type=currentFrame();if(type==='none')return;
     const s=w/W;const bar=Math.max(13,25*s);
     c.save();
-    c.shadowColor='rgba(0,0,0,.22)';c.shadowBlur=8*s;
-    const grad=c.createLinearGradient(0,0,w,0);grad.addColorStop(0,'#2d2522');grad.addColorStop(.5,'#45352f');grad.addColorStop(1,'#261f1d');c.fillStyle=grad;
-    c.fillRect(w/2-bar/2,0,bar,h);
-    if(type==='four')c.fillRect(0,h/2-bar/2,w,bar);
-    else{c.fillRect(0,h/3-bar/2,w,bar);c.fillRect(0,h*2/3-bar/2,w,bar)}
+    c.shadowColor='rgba(0,0,0,.26)';c.shadowBlur=10*s;
+    woodBar(c,w/2-bar/2,0,bar,h,true);
+    if(type==='four') woodBar(c,0,h/2-bar/2,w,bar,false);
+    else { woodBar(c,0,h/3-bar/2,w,bar,false); woodBar(c,0,h*2/3-bar/2,w,bar,false); }
     c.restore();
   }
 
@@ -368,10 +535,19 @@
     rctx.setTransform(1,0,0,1,0,0);rctx.globalCompositeOperation='source-over';rctx.clearRect(0,0,targetW,targetH);
     rctx.drawImage(photoCanvas,0,0,targetW,targetH);rctx.globalCompositeOperation='destination-in';rctx.drawImage(useMask,0,0,targetW,targetH);rctx.globalCompositeOperation='source-over';target.drawImage(reveal,0,0);
 
+    if(trail.width!==targetW||trail.height!==targetH){ /* no-op size source canvas fixed */ }
+    if(currentWipeMode()==='cloth'){
+      target.save();
+      target.filter=`blur(${2.2*Math.min(sx,sy)}px)`;
+      target.globalAlpha=.3;
+      target.drawImage(trail,0,0,targetW,targetH);
+      target.restore();
+    }
+
     if(breathAmt>0){
       const rg=target.createRadialGradient(targetW*.5,targetH*.5,20,targetW*.5,targetH*.5,targetW*.58);rg.addColorStop(0,`rgba(246,250,252,${.76*breathAmt})`);rg.addColorStop(.52,`rgba(238,247,250,${.48*breathAmt})`);rg.addColorStop(1,'rgba(236,246,250,0)');target.fillStyle=rg;target.fillRect(0,0,targetW,targetH);
     }
-    drawSparkles(target,targetW,targetH,time);
+    drawSparkles(target,targetW,targetH,time,useMask);
     drawFrame(target,targetW,targetH);
     target.restore();
   }
@@ -383,34 +559,58 @@
   }
 
   function canvasPos(e){const r=canvas.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}}
-  canvas.addEventListener('pointerdown',e=>{drawing=true;canvas.setPointerCapture(e.pointerId);lastPt=canvasPos(e);solidStamp(mctx,lastPt.x,lastPt.y,+els.wipe.value,1);playWipeSound(.24);els.hint.classList.add('hide')});
-  canvas.addEventListener('pointermove',e=>{if(!drawing)return;const p=canvasPos(e);wipeLine(lastPt,p);lastPt=p});
+  canvas.addEventListener('pointerdown',e=>{drawing=true;canvas.setPointerCapture(e.pointerId);lastPt=canvasPos(e);solidStamp(mctx,lastPt.x,lastPt.y,+els.wipe.value,1);if(currentWipeMode()==='cloth') addClothTrail(lastPt,lastPt,+els.wipe.value);pushFlash(lastPt.x,lastPt.y,14,1);playWipeSound(.24);els.hint.classList.add('hide')});
+  canvas.addEventListener('pointermove',e=>{if(!drawing)return;const p=canvasPos(e);wipeLine(lastPt,p);if(currentWipeMode()==='cloth') addClothTrail(lastPt,p,+els.wipe.value);if(Math.random()>.45) pushFlash(p.x,p.y,12,.8);lastPt=p});
   canvas.addEventListener('pointerup',()=>{drawing=false;lastPt=null});canvas.addEventListener('pointercancel',()=>{drawing=false;lastPt=null});
 
   function ensureAudio(){if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx}
   function noiseSound(duration=.65,kind='wipe'){
     if(!els.sound.checked)return;const ac=ensureAudio();const len=Math.floor(ac.sampleRate*duration);const buf=ac.createBuffer(1,len,ac.sampleRate);const data=buf.getChannelData(0);for(let i=0;i<len;i++)data[i]=(Math.random()*2-1)*(kind==='wipe'?(.35+.65*Math.sin(Math.PI*i/len)):1);
-    const src=ac.createBufferSource();src.buffer=buf;const filter=ac.createBiquadFilter();filter.type=kind==='wipe'?'bandpass':'lowpass';filter.frequency.value=kind==='wipe'?1650:760;filter.Q.value=kind==='wipe'?.7:.3;const gain=ac.createGain();const now=ac.currentTime;gain.gain.setValueAtTime(0,now);gain.gain.linearRampToValueAtTime(kind==='wipe'?.095:.12,now+.05);gain.gain.exponentialRampToValueAtTime(.001,now+duration);src.connect(filter).connect(gain).connect(ac.destination);src.start();src.stop(now+duration)
+    const src=ac.createBufferSource();src.buffer=buf;const filter=ac.createBiquadFilter();filter.type=kind==='wipe'?'bandpass':'lowpass';filter.frequency.value=kind==='wipe'?1650:760;filter.Q.value=kind==='wipe'?.7:.3;const gain=ac.createGain();const now=ac.currentTime;gain.gain.setValueAtTime(0,now);gain.gain.linearRampToValueAtTime(kind==='wipe'?.171:.216,now+.05);gain.gain.exponentialRampToValueAtTime(.001,now+duration);src.connect(filter).connect(gain).connect(ac.destination);src.start();src.stop(now+duration)
   }
   function playWipeSound(d=.7){noiseSound(d,'wipe')}function playBreathSound(){noiseSound(1.15,'breath')}
 
   function animateWipe(){
-    cancelAnimationFrame(animId);els.hint.classList.add('hide');playWipeSound(Math.min(1.4,durationMs()/1000));const start=performance.now(),dur=durationMs();
-    function tick(now){const p=Math.min(1,(now-start)/dur);currentAutoProgress=p;buildAutoMask(p);if(p<1)animId=requestAnimationFrame(tick);else currentAutoProgress=null}animId=requestAnimationFrame(tick)
+    cancelAnimationFrame(animId);els.hint.classList.add('hide');
+    const mode=currentWipeMode();
+    const dur=Math.round(durationMs()*(mode==='diagonal'?1.12:.85));
+    playWipeSound(Math.min(1.55,dur/1000));
+    const start=performance.now();
+    function tick(now){const p=Math.min(1,(now-start)/dur);currentAutoProgress=p;buildAutoMask(p);if(Math.random()>.58){let pos;if(mode==='cloth'){pos=clothFrontPoint(p);}else{const {points}=buildAutoPath(W,H);const idx=Math.min(points.length-1,Math.floor((points.length-1)*p));pos=points[idx]||points[0];}if(pos) pushFlash(pos.x,pos.y,14,.95);} if(p<1)animId=requestAnimationFrame(tick);else currentAutoProgress=null}animId=requestAnimationFrame(tick)
   }
   function breathAgain(){
     playBreathSound();const start=performance.now(),dur=1250;const original=document.createElement('canvas');original.width=W;original.height=H;original.getContext('2d').drawImage(mask,0,0);
     function tick(now){const p=Math.min(1,(now-start)/dur);breath=Math.sin(p*Math.PI)*.92; mctx.clearRect(0,0,W,H);mctx.globalAlpha=Math.max(0,1-p);mctx.drawImage(original,0,0);mctx.globalAlpha=1;if(p<1)requestAnimationFrame(tick);else{breath=0;mctx.clearRect(0,0,W,H);els.hint.classList.remove('hide')}} requestAnimationFrame(tick)
   }
 
-  els.play.onclick=animateWipe;els.breath.onclick=breathAgain;els.reset.onclick=()=>{cancelAnimationFrame(animId);mctx.clearRect(0,0,W,H);breath=0;els.hint.classList.remove('hide')};
-  els.clear.onclick=()=>{mctx.fillStyle='#fff';mctx.fillRect(0,0,W,H);els.hint.classList.add('hide')};
+  els.play.onclick=animateWipe;els.breath.onclick=breathAgain;els.reset.onclick=()=>{cancelAnimationFrame(animId);mctx.clearRect(0,0,W,H);clearTrails();breath=0;flashGlints=[];els.hint.classList.remove('hide')};
+  els.clear.onclick=()=>{mctx.fillStyle='#fff';mctx.fillRect(0,0,W,H);clearTrails();flashGlints=[];els.hint.classList.add('hide')};
 
-  els.photo.addEventListener('change',e=>{const file=e.target.files?.[0];if(!file)return;const img=new Image();img.onload=()=>{photo=img;fitPhoto();mctx.clearRect(0,0,W,H);URL.revokeObjectURL(img.src);els.hint.classList.remove('hide')};img.src=URL.createObjectURL(file)});
+  els.photo.addEventListener('change',e=>{const file=e.target.files?.[0];if(!file)return;const img=new Image();img.onload=()=>{photo=img;fitPhoto();mctx.clearRect(0,0,W,H);clearTrails();URL.revokeObjectURL(img.src);els.hint.classList.remove('hide')};img.src=URL.createObjectURL(file)});
   els.frost.addEventListener('input',()=>{document.getElementById('frostVal').textContent=els.frost.value+'%';buildFrost()});
   els.blur.addEventListener('input',()=>document.getElementById('blurVal').textContent=els.blur.value+'px');
   els.wipe.addEventListener('input',()=>document.getElementById('wipeVal').textContent=els.wipe.value);
   els.duration.addEventListener('input',()=>document.getElementById('durationVal').textContent=(+els.duration.value/10).toFixed(1)+'s');
+
+  function exportStill(type='image/png', quality=.92){
+    const outW=+document.querySelector('input[name="gifSize"]:checked').value;
+    const outH=Math.round(outW*4/3);
+    const out=document.createElement('canvas');
+    out.width=outW; out.height=outH;
+    const oc=out.getContext('2d',{willReadFrequently:true});
+    render(oc,outW,outH,null,performance.now(),0);
+    out.toBlob(blob=>{
+      if(!blob){ els.status.textContent='사진 저장에 실패했어요.'; return; }
+      const ext=type==='image/png'?'png':'jpg';
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download=`frosted-moment-${Date.now()}.${ext}`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+      els.status.textContent=ext.toUpperCase()+' 사진이 저장됐어요 ❄️';
+      setTimeout(()=>{ if(!els.progress.classList.contains('show')) els.status.textContent=''; },1800);
+    }, type, quality);
+  }
 
   async function exportGIF(){
     els.gif.disabled=true;els.progress.classList.add('show');els.status.textContent='GIF 엔진 불러오는 중…';els.bar.style.width='3%';
@@ -418,17 +618,19 @@
       const {GIFEncoder,quantize,applyPalette}=await import('https://cdn.jsdelivr.net/npm/gifenc@1.0.3/+esm');
       const outW=+document.querySelector('input[name="gifSize"]:checked').value,outH=Math.round(outW*4/3);const out=document.createElement('canvas');out.width=outW;out.height=outH;const oc=out.getContext('2d',{willReadFrequently:true});
       const localMask=document.createElement('canvas');localMask.width=W;localMask.height=H;const lmc=localMask.getContext('2d');
-      const gif=GIFEncoder();const frames=24,delay=Math.max(35,Math.round(durationMs()/frames));
+      const gif=GIFEncoder();const frames=24;const actualDuration=Math.round(durationMs()*(currentWipeMode()==='diagonal'?1.12:.85));const delay=Math.max(35,Math.round(actualDuration/frames));
       for(let i=0;i<frames;i++){
         const p=i/(frames-1);buildAutoMask(p,lmc,localMask);render(oc,outW,outH,localMask,i*delay,0);const rgba=oc.getImageData(0,0,outW,outH).data;const palette=quantize(rgba,256,{format:'rgba4444'});const index=applyPalette(rgba,palette,'rgba4444');gif.writeFrame(index,outW,outH,{palette,delay,repeat:0});
         els.bar.style.width=`${Math.round((i+1)/frames*94)}%`;els.status.textContent=`GIF 만드는 중… ${i+1} / ${frames}`;await new Promise(r=>setTimeout(r,0));
       }
       // 마지막 장면을 잠깐 유지
-      buildAutoMask(1,lmc,localMask);render(oc,outW,outH,localMask,durationMs()+500,0);let rgba=oc.getImageData(0,0,outW,outH).data;let palette=quantize(rgba,256,{format:'rgba4444'});let index=applyPalette(rgba,palette,'rgba4444');gif.writeFrame(index,outW,outH,{palette,delay:650,repeat:0});
+      buildAutoMask(1,lmc,localMask);render(oc,outW,outH,localMask,actualDuration+500,0);let rgba=oc.getImageData(0,0,outW,outH).data;let palette=quantize(rgba,256,{format:'rgba4444'});let index=applyPalette(rgba,palette,'rgba4444');gif.writeFrame(index,outW,outH,{palette,delay:650,repeat:0});
       gif.finish();const blob=new Blob([gif.bytes()],{type:'image/gif'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`frosted-moment-${Date.now()}.gif`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500);els.bar.style.width='100%';els.status.textContent='완성! GIF가 저장됐어요 ❄️';setTimeout(()=>{els.progress.classList.remove('show');els.status.textContent='';els.bar.style.width='0'},2200)
     }catch(err){console.error(err);els.status.textContent='GIF 저장 모듈을 불러오지 못했어요. 인터넷 연결 후 다시 시도해 주세요.';els.bar.style.width='0'}finally{els.gif.disabled=false}
   }
   els.gif.onclick=exportGIF;
+  els.png.onclick=()=>exportStill('image/png');
+  els.jpg.onclick=()=>exportStill('image/jpeg',.94);
 
   fitPhoto();buildFrost();requestAnimationFrame(loop);
 })();
