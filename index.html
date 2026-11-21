@@ -125,10 +125,10 @@
     <section class="section">
       <div class="section-title"><strong>움직임</strong><span class="mini">Motion</span></div>
       <div class="control"><label for="duration">닦기 속도</label><span class="value" id="durationVal">2.8s</span><input id="duration" type="range" min="16" max="48" value="28" /></div>
-      <div class="section-title" style="margin-top:12px"><strong>닦기 모양</strong></div>
+      <div class="section-title" style="margin-top:12px"><strong>자동 닦기 모양</strong></div>
       <div class="seg two">
         <input type="radio" name="wipeMode" id="wipeCloth" value="cloth" checked><label for="wipeCloth">천으로 닦기</label>
-        <input type="radio" name="wipeMode" id="wipeDiagonal" value="diagonal"><label for="wipeDiagonal">닦아내기</label>
+        <input type="radio" name="wipeMode" id="wipeDiagonal" value="diagonal"><label for="wipeDiagonal">대각선으로 닦기</label>
       </div>
       <div class="switch-row"><span>사각거리는 유리 소리</span><label class="switch"><input id="soundToggle" type="checkbox" checked><span class="slider"></span></label></div>
       <div class="switch-row"><span>겨울빛 반짝임</span><label class="switch"><input id="sparkleToggle" type="checkbox" checked><span class="slider"></span></label></div>
@@ -142,26 +142,19 @@
     </section>
 
     <section class="section">
-  <div class="section-title">
-    <strong>저장</strong>
-    <span class="mini">GIF · PHOTO</span>
-  </div>
-
-  <div class="btns">
-    <button class="btn save" id="gifBtn">
-      GIF로 저장하기
-    </button>
-
-    <button class="btn ghost" id="manualSaveBtn">
-      현재 닦인 모습을 사진으로 저장
-    </button>
-  </div>
-
-  <p class="tip">
-    사진과 GIF는 브라우저 안에서 처리되며 서버로 업로드되지 않아요.
-  </p>
-</section>
-</aside>
+      <div class="section-title"><strong>저장</strong><span class="mini">GIF · PHOTO</span></div>
+      <div class="seg two">
+        <input type="radio" name="gifSize" id="gif480" value="480" checked><label for="gif480">480 × 640</label>
+        <input type="radio" name="gifSize" id="gif720" value="720"><label for="gif720">720 × 960</label>
+      </div>
+      <div class="btns">
+        <button class="btn save" id="gifBtn">GIF로 저장하기</button>
+        <button class="btn ghost" id="pngBtn">PNG로 저장하기</button>
+        <button class="btn ghost" id="jpgBtn">JPG로 저장하기</button>
+      </div>
+      <p class="tip">사진은 브라우저 안에서만 처리되며 서버로 업로드되지 않아요.</p>
+    </section>
+  </aside>
 
   <main class="stage-wrap">
     <div class="preview-shell">
@@ -599,376 +592,45 @@
   els.wipe.addEventListener('input',()=>document.getElementById('wipeVal').textContent=els.wipe.value);
   els.duration.addEventListener('input',()=>document.getElementById('durationVal').textContent=(+els.duration.value/10).toFixed(1)+'s');
 
-  function exportStill() {
-  const outW = 720;
-  const outH = 960;
-
-  const out = document.createElement('canvas');
-  out.width = outW;
-  out.height = outH;
-
-  const oc = out.getContext('2d');
-
-  // 프리뷰 주변 배경
-  const bg = oc.createLinearGradient(0, 0, outW, outH);
-  bg.addColorStop(0, '#edf3f6');
-  bg.addColorStop(0.5, '#e7eef2');
-  bg.addColorStop(1, '#f7f8fa');
-
-  oc.fillStyle = bg;
-  oc.fillRect(0, 0, outW, outH);
-
-  // 창문 주변 여백
-  const padding = 30;
-  const sceneW = outW - padding * 2;
-  const sceneH = outH - padding * 2;
-
-  // 그림자
-  oc.save();
-  oc.shadowColor = 'rgba(36, 47, 54, 0.2)';
-  oc.shadowBlur = 16;
-  oc.shadowOffsetY = 6;
-
-  oc.fillStyle = '#ffffff';
-  oc.fillRect(
-    padding,
-    padding,
-    sceneW,
-    sceneH
-  );
-
-  oc.restore();
-
-  // 별도 캔버스에서 창문 렌더링
-  const scene = document.createElement('canvas');
-  scene.width = sceneW;
-  scene.height = sceneH;
-
-  const sc = scene.getContext('2d');
-
-  render(
-    sc,
-    sceneW,
-    sceneH,
-    null,
-    performance.now(),
-    0
-  );
-
-  // 전체 창문을 여백 안에 배치
-  oc.drawImage(
-    scene,
-    padding,
-    padding,
-    sceneW,
-    sceneH
-  );
-
-  // PNG 저장
-  out.toBlob(blob => {
-    if (!blob) {
-      els.status.textContent = '사진 저장에 실패했어요.';
-      return;
-    }
-
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-
-    a.href = url;
-    a.download = `frosted-moment-${Date.now()}.png`;
-
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
-
-    els.status.textContent =
-      '현재 모습이 PNG 사진으로 저장됐어요 ❄️';
-
-    setTimeout(() => {
-      els.status.textContent = '';
-    }, 1800);
-
-  }, 'image/png');
-}
-
-  async function exportGIF() {
-  els.gif.disabled = true;
-  els.progress.classList.add('show');
-  els.status.textContent = '고화질 GIF 준비 중...';
-  els.bar.style.width = '2%';
-
-  try {
-    const {
-      GIFEncoder,
-      quantize,
-      applyPalette
-    } = await import(
-      'https://cdn.jsdelivr.net/npm/gifenc@1.0.3/+esm'
-    );
-
-    const outW = 720;
-    const outH = 960;
-    const padding = 30;
-
-    const sceneW = outW - padding * 2;
-    const sceneH = outH - padding * 2;
-
-    const out = document.createElement('canvas');
-    out.width = outW;
-    out.height = outH;
-
-    const oc = out.getContext('2d', {
-      willReadFrequently: true
-    });
-
-    const scene = document.createElement('canvas');
-    scene.width = sceneW;
-    scene.height = sceneH;
-
-    const sc = scene.getContext('2d', {
-      willReadFrequently: true
-    });
-
-    const localMask = document.createElement('canvas');
-    localMask.width = W;
-    localMask.height = H;
-
-    const lmc = localMask.getContext('2d');
-
-    const gif = GIFEncoder();
-
-    const frames = 32;
-
-    const actualDuration = Math.round(
-      durationMs() *
-      (currentWipeMode() === 'diagonal' ? 1.12 : 1.0)
-    );
-
-    const delay = Math.max(
-      35,
-      Math.round(actualDuration / frames)
-    );
-
-    // 출력 캔버스에 창문과 주변 배경 렌더링
-    function renderExportFrame(progress, time) {
-      buildAutoMask(progress, lmc, localMask);
-
-      render(
-        sc,
-        sceneW,
-        sceneH,
-        localMask,
-        time,
-        0
-      );
-
-      // 배경
-      const bg = oc.createLinearGradient(
-        0, 0, outW, outH
-      );
-
-      bg.addColorStop(0, '#edf3f6');
-      bg.addColorStop(0.5, '#e7eef2');
-      bg.addColorStop(1, '#f7f8fa');
-
-      oc.fillStyle = bg;
-      oc.fillRect(0, 0, outW, outH);
-
-      // 창문 배치
-      oc.drawImage(
-        scene,
-        padding,
-        padding,
-        sceneW,
-        sceneH
-      );
-    }
-
-    // 1단계: 공통 색상 팔레트 추출
-    // 작은 샘플 이미지들을 합쳐 전체 프레임의 색상 분포 계산
-    const sampleCanvas = document.createElement('canvas');
-    sampleCanvas.width = 180;
-    sampleCanvas.height = 240;
-
-    const sampleCtx = sampleCanvas.getContext('2d', {
-      willReadFrequently: true
-    });
-
-    const samples = [];
-
-    for (let i = 0; i < frames; i++) {
-      const progress = i / (frames - 1);
-
-      renderExportFrame(
-        progress,
-        i * delay
-      );
-
-      sampleCtx.clearRect(
-        0, 0, 180, 240
-      );
-
-      sampleCtx.drawImage(
-        out,
-        0, 0,
-        180, 240
-      );
-
-      samples.push(
-        sampleCtx.getImageData(
-          0, 0, 180, 240
-        ).data
-      );
-
-      els.bar.style.width =
-        `${Math.round((i + 1) / frames * 25)}%`;
-
-      els.status.textContent =
-        `색상 최적화 중... ${i + 1} / ${frames}`;
-
-      await new Promise(resolve =>
-        setTimeout(resolve, 0)
-      );
-    }
-
-    // 공통 팔레트 생성
-    const sampleSize = 180 * 240 * 4;
-
-    const mergedSamples = new Uint8Array(
-      sampleSize * frames
-    );
-
-    samples.forEach((sample, i) => {
-      mergedSamples.set(
-        sample,
-        i * sampleSize
-      );
-    });
-
-    const palette = quantize(
-      mergedSamples,
-      256,
-      { format: 'rgb565' }
-    );
-
-    // 2단계: 공통 팔레트로 GIF 프레임 인코딩
-    for (let i = 0; i < frames; i++) {
-      const progress = i / (frames - 1);
-
-      renderExportFrame(
-        progress,
-        i * delay
-      );
-
-      const rgba = oc.getImageData(
-        0, 0, outW, outH
-      ).data;
-
-      const indexed = applyPalette(
-        rgba,
-        palette,
-        'rgb565'
-      );
-
-      gif.writeFrame(
-        indexed,
-        outW,
-        outH,
-        {
-          palette,
-          delay,
-          repeat: 0
-        }
-      );
-
-      els.bar.style.width =
-        `${25 + Math.round((i + 1) / frames * 70)}%`;
-
-      els.status.textContent =
-        `고화질 GIF 인코딩 중... ${i + 1} / ${frames}`;
-
-      await new Promise(resolve =>
-        setTimeout(resolve, 0)
-      );
-    }
-
-    // 마지막 완성 장면 유지
-    renderExportFrame(
-      1,
-      actualDuration + 500
-    );
-
-    const finalRGBA = oc.getImageData(
-      0, 0, outW, outH
-    ).data;
-
-    const finalIndexed = applyPalette(
-      finalRGBA,
-      palette,
-      'rgb565'
-    );
-
-    gif.writeFrame(
-      finalIndexed,
-      outW,
-      outH,
-      {
-        palette,
-        delay: 650,
-        repeat: 0
-      }
-    );
-
-    // GIF 파일 생성
-    gif.finish();
-
-    const blob = new Blob(
-      [gif.bytes()],
-      { type: 'image/gif' }
-    );
-
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download =
-      `frosted-moment-${Date.now()}.gif`;
-
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-    }, 1500);
-
-    els.bar.style.width = '100%';
-
-    els.status.textContent =
-      '완성! 720 × 960 고화질 GIF가 저장됐어요 ❄️';
-
-    setTimeout(() => {
-      els.progress.classList.remove('show');
-      els.status.textContent = '';
-      els.bar.style.width = '0';
-    }, 2400);
-
-  } catch (err) {
-    console.error('GIF Export Error:', err);
-
-    els.status.textContent =
-      'GIF 저장에 실패했어요. 인터넷 연결과 콘솔 오류를 확인해 주세요.';
-
-    els.bar.style.width = '0';
-
-  } finally {
-    els.gif.disabled = false;
+  function exportStill(type='image/png', quality=.92){
+    const outW=+document.querySelector('input[name="gifSize"]:checked').value;
+    const outH=Math.round(outW*4/3);
+    const out=document.createElement('canvas');
+    out.width=outW; out.height=outH;
+    const oc=out.getContext('2d',{willReadFrequently:true});
+    render(oc,outW,outH,null,performance.now(),0);
+    out.toBlob(blob=>{
+      if(!blob){ els.status.textContent='사진 저장에 실패했어요.'; return; }
+      const ext=type==='image/png'?'png':'jpg';
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download=`frosted-moment-${Date.now()}.${ext}`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+      els.status.textContent=ext.toUpperCase()+' 사진이 저장됐어요 ❄️';
+      setTimeout(()=>{ if(!els.progress.classList.contains('show')) els.status.textContent=''; },1800);
+    }, type, quality);
   }
-}
+
+  async function exportGIF(){
+    els.gif.disabled=true;els.progress.classList.add('show');els.status.textContent='GIF 엔진 불러오는 중…';els.bar.style.width='3%';
+    try{
+      const {GIFEncoder,quantize,applyPalette}=await import('https://cdn.jsdelivr.net/npm/gifenc@1.0.3/+esm');
+      const outW=+document.querySelector('input[name="gifSize"]:checked').value,outH=Math.round(outW*4/3);const out=document.createElement('canvas');out.width=outW;out.height=outH;const oc=out.getContext('2d',{willReadFrequently:true});
+      const localMask=document.createElement('canvas');localMask.width=W;localMask.height=H;const lmc=localMask.getContext('2d');
+      const gif=GIFEncoder();const frames=24;const actualDuration=Math.round(durationMs()*(currentWipeMode()==='diagonal'?1.12:.85));const delay=Math.max(35,Math.round(actualDuration/frames));
+      for(let i=0;i<frames;i++){
+        const p=i/(frames-1);buildAutoMask(p,lmc,localMask);render(oc,outW,outH,localMask,i*delay,0);const rgba=oc.getImageData(0,0,outW,outH).data;const palette=quantize(rgba,256,{format:'rgba4444'});const index=applyPalette(rgba,palette,'rgba4444');gif.writeFrame(index,outW,outH,{palette,delay,repeat:0});
+        els.bar.style.width=`${Math.round((i+1)/frames*94)}%`;els.status.textContent=`GIF 만드는 중… ${i+1} / ${frames}`;await new Promise(r=>setTimeout(r,0));
+      }
+      // 마지막 장면을 잠깐 유지
+      buildAutoMask(1,lmc,localMask);render(oc,outW,outH,localMask,actualDuration+500,0);let rgba=oc.getImageData(0,0,outW,outH).data;let palette=quantize(rgba,256,{format:'rgba4444'});let index=applyPalette(rgba,palette,'rgba4444');gif.writeFrame(index,outW,outH,{palette,delay:650,repeat:0});
+      gif.finish();const blob=new Blob([gif.bytes()],{type:'image/gif'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`frosted-moment-${Date.now()}.gif`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500);els.bar.style.width='100%';els.status.textContent='완성! GIF가 저장됐어요 ❄️';setTimeout(()=>{els.progress.classList.remove('show');els.status.textContent='';els.bar.style.width='0'},2200)
+    }catch(err){console.error(err);els.status.textContent='GIF 저장 모듈을 불러오지 못했어요. 인터넷 연결 후 다시 시도해 주세요.';els.bar.style.width='0'}finally{els.gif.disabled=false}
+  }
   els.gif.onclick=exportGIF;
-  els.manualSave.onclick=exportStill;
+  els.png.onclick=()=>exportStill('image/png');
+  els.jpg.onclick=()=>exportStill('image/jpeg',.94);
 
   fitPhoto();buildFrost();requestAnimationFrame(loop);
 })();
