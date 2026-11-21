@@ -59,7 +59,31 @@
   .preview-shell{width:min(100%,760px);display:flex;flex-direction:column;align-items:center;gap:14px}
   .preview-top{width:100%;display:flex;align-items:center;justify-content:space-between;color:#84929c;font-size:11px;padding:0 6px}
   .live-dot{display:inline-flex;align-items:center;gap:6px}.live-dot:before{content:"";width:6px;height:6px;border-radius:50%;background:#89a7b8;box-shadow:0 0 0 4px rgba(137,167,184,.13)}
-  .canvas-frame{position:relative;width:min(100%,560px);aspect-ratio:3/4;border-radius:14px;padding:10px;background:linear-gradient(145deg,#2f211d,#4f382f 38%,#2a1d19 68%,#1f1512);box-shadow:0 24px 60px rgba(36,47,54,.24),inset 0 0 0 1px rgba(255,255,255,.08);touch-action:none;user-select:none;-webkit-user-select:none}
+  .canvas-frame{
+  position:relative;
+  width:min(100%,560px);
+  aspect-ratio:3/4;
+  border-radius:14px;
+  padding:10px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #2f211d 0%,
+      #493229 24%,
+      #5a4034 50%,
+      #3a2822 76%,
+      #211613 100%
+    );
+
+  box-shadow:
+    0 24px 60px rgba(36,47,54,.24),
+    inset 0 0 0 1px rgba(255,255,255,.08);
+
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+}
   .canvas-frame:before{content:"";position:absolute;inset:4px;border-radius:11px;border:1px solid rgba(255,255,255,.08);pointer-events:none}
   canvas{display:block;width:100%;height:100%;border-radius:7px;background:#cbd7df;touch-action:none}
   .hint{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);padding:8px 12px;border-radius:999px;background:rgba(25,33,39,.52);backdrop-filter:blur(8px);color:#fff;font-size:10px;letter-spacing:-.01em;pointer-events:none;transition:.35s;white-space:nowrap}
@@ -765,9 +789,16 @@
   const oc=out.getContext('2d',{willReadFrequently:true});
 
   // 프리뷰와 같은 나무색 프레임 배경
-  const bg=oc.createLinearGradient(0,0,1,1);
-  bg.addColorStop(0,'#3a2822');
-  bg.addColorStop(1,'#3a2822');
+  const bg=oc.createLinearGradient(
+  0, 0,
+  oc.width, oc.height
+);
+
+bg.addColorStop(0, '#2f211d');
+bg.addColorStop(0.24, '#493229');
+bg.addColorStop(0.5, '#5a4034');
+bg.addColorStop(0.76, '#3a2822');
+bg.addColorStop(1, '#211613');
 
   oc.fillStyle=bg;
   oc.fillRect(0,0,out.width,out.height);
@@ -832,7 +863,18 @@ const oc=out.getContext('2d',{willReadFrequently:true});
       for(let i=0;i<frames;i++){
         const p=i/(frames-1);buildAutoMask(p,lmc,localMask);render(sc,outW,outH,localMask,i*delay,0);
 
-oc.fillStyle='#3a2822';
+const bg = oc.createLinearGradient(
+  0, 0,
+  oc.width, oc.height
+);
+
+bg.addColorStop(0, '#2f211d');
+bg.addColorStop(0.24, '#493229');
+bg.addColorStop(0.5, '#5a4034');
+bg.addColorStop(0.76, '#3a2822');
+bg.addColorStop(1, '#211613');
+
+oc.fillStyle = bg;
 oc.fillRect(0,0,out.width,out.height);
 oc.drawImage(scene,padding,padding,outW,outH);
 
@@ -843,7 +885,18 @@ const rgba=oc.getImageData(0,0,out.width,out.height).data;const palette=quantize
       buildAutoMask(1,lmc,localMask);
 render(sc,outW,outH,localMask,actualDuration+500,0);
 
-oc.fillStyle='#3a2822';
+const bg = oc.createLinearGradient(
+  0, 0,
+  oc.width, oc.height
+);
+
+bg.addColorStop(0, '#2f211d');
+bg.addColorStop(0.24, '#493229');
+bg.addColorStop(0.5, '#5a4034');
+bg.addColorStop(0.76, '#3a2822');
+bg.addColorStop(1, '#211613');
+
+oc.fillStyle = bg;
 oc.fillRect(0,0,out.width,out.height);
 oc.drawImage(scene,padding,padding,outW,outH);
 
